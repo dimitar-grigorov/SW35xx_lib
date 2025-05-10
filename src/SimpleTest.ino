@@ -1,10 +1,19 @@
 #include <Arduino.h>
-#include "SW35xx_lib.h"
-#include <Wire.h>
+#include <SoftwareWire.h>
+#include <SW35xx_lib.h>
+#include "TwoWireWrapper.h"
+#include "SoftwareWireWrapper.h"
 
 using namespace SW35xx_lib;
 
-SW35xx sw(Wire);
+// 1) Hardware I²C
+TwoWireWrapper i2cWrapper(Wire);
+
+// 2) Software I²C on pins 2=SDA, 3=SCL
+// SoftwareWire softBus(2, 3);
+// SoftwareWireWrapper i2cWrapper(softBus);
+
+SW35xx device(i2cWrapper);
 
 const char *fastChargeType2String(SW35xx::fastChargeType_t fastChargeType)
 {
@@ -55,7 +64,9 @@ const char *fastChargeType2String(SW35xx::fastChargeType_t fastChargeType)
 void setup()
 {
   Serial.begin(9600);
-  Wire.begin(); // A4=A SDA, A5=A SCL on Pro Mini
+
+  device.begin();
+
   // sw.setMaxCurrent5A();
   // sw.resetPDLimits();
 }
@@ -63,26 +74,26 @@ void setup()
 void loop()
 {
   Serial.println("Reading Status: ");
-  sw.readStatus();
+  device.readStatus();
   Serial.println("=======================================");
   Serial.print("Current input voltage: ");
-  Serial.print(sw.vin_mV);
+  Serial.print(device.vin_mV);
   Serial.println(" mV");
   Serial.print("Current output voltage: ");
-  Serial.print(sw.vout_mV);
+  Serial.print(device.vout_mV);
   Serial.println(" mV");
   Serial.print("Current USB-C current: ");
-  Serial.print(sw.iout_usbc_mA);
+  Serial.print(device.iout_usbc_mA);
   Serial.println(" mA");
   Serial.print("Current USB-A current: ");
-  Serial.print(sw.iout_usba_mA);
+  Serial.print(device.iout_usba_mA);
   Serial.println(" mA");
   Serial.print("Current fast charge type: ");
-  Serial.println(fastChargeType2String(sw.fastChargeType));
-  if (sw.fastChargeType == SW35xx::PD_FIX || sw.fastChargeType == SW35xx::PD_PPS)
+  Serial.println(fastChargeType2String(device.fastChargeType));
+  if (device.fastChargeType == SW35xx::PD_FIX || device.fastChargeType == SW35xx::PD_PPS)
   {
     Serial.print("Current PD version: ");
-    Serial.println(sw.PDVersion);
+    Serial.println(device.PDVersion);
   }
   Serial.println("=======================================");
   Serial.println();

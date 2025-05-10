@@ -41,8 +41,8 @@
 namespace SW35xx_lib
 {
 
-  // SW35xx::SW35xx(I2CInterface &i2c) : _i2c(i2c) {}
-  SW35xx::SW35xx(TwoWire &i2c) : _i2c(i2c) {}  
+  SW35xx::SW35xx(I2CInterface &i2c) : _i2c(i2c) {}
+  // SW35xx::SW35xx(TwoWire &i2c) : _i2c(i2c) {}
   SW35xx::~SW35xx() {}
 
   int SW35xx::i2cReadReg8(const uint8_t reg)
@@ -106,6 +106,7 @@ namespace SW35xx_lib
 
   void SW35xx::begin()
   {
+    _i2c.begin();
     // 启用输入电压读取
     // Enable voltage reading
     i2cWriteReg8(SW35XX_I2C_CTRL, 0x02);
