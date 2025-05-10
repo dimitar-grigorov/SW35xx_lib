@@ -107,8 +107,7 @@ namespace SW35xx_lib
   void SW35xx::begin()
   {
     _i2c.begin();
-    // 启用输入电压读取
-    // Enable voltage reading
+    // Enable input voltage reading
     i2cWriteReg8(SW35XX_I2C_CTRL, 0x02);
   }
 
@@ -149,17 +148,13 @@ namespace SW35xx_lib
 
     if (useADCDataBuffer)
     {
-      // 读取输入电压
       // Read input voltage
       vin = readADCDataBuffer(ADC_VIN);
-      // 读取输出电压
       // Read output voltage
       vout = readADCDataBuffer(ADC_VOUT);
-      // 读取接口1输出电流
-      // Read USB-C output current
+      // Read Port1 (USB-C) output current
       iout_usbc = readADCDataBuffer(ADC_IOUT_USB_C);
-      // 读取接口2输出电流
-      // Read USB-A output current
+      // Read Port2 (USB-A) output current
       iout_usba = readADCDataBuffer(ADC_IOUT_USB_A);
     }
     else
@@ -179,7 +174,7 @@ namespace SW35xx_lib
 
     vin_mV = vin * 10;
     vout_mV = vout * 6;
-    if (iout_usbc > 15) // 在没有输出的情况下读到的数据是15
+    if (iout_usbc > 15) // The readed data when there is no output is 15
       iout_usbc_mA = iout_usbc * 5 / 2;
     else
       iout_usbc_mA = 0;
@@ -188,7 +183,6 @@ namespace SW35xx_lib
       iout_usba_mA = iout_usba * 5 / 2;
     else
       iout_usba_mA = 0;
-    // 读取pd版本和快充协议
     // Read PD version and fast charge protocol
     const uint8_t status = i2cReadReg8(SW35XX_FCX_STATUS);
     PDVersion = ((status & 0x30) >> 4) + 1;
