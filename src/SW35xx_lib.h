@@ -1,6 +1,8 @@
 #pragma once
 #include <stdint.h>
-#include "I2CInterface.h"
+
+// #include "I2CInterface.h"
+#include <Wire.h>
 
 #ifndef BIT
 #define BIT(x) (1 << (x))
@@ -67,7 +69,8 @@ namespace SW35xx_lib
       ADC_TEMPERATURE = 6,
     };
 
-    I2CInterface &_i2c;
+    // I2CInterface &_i2c;
+    TwoWire &_i2c;
 
     int i2cReadReg8(const uint8_t reg);
     int i2cWriteReg8(const uint8_t reg, const uint8_t data);
@@ -78,8 +81,8 @@ namespace SW35xx_lib
     uint16_t readADCDataBuffer(const enum ADCDataType type);
 
   public:
-    // Constructor now accepts any I2CInterface
-    SW35xx(I2CInterface &i2c);
+    // SW35xx(I2CInterface &i2c);
+    SW35xx(TwoWire &i2c = Wire);
     ~SW35xx();
     void begin();
     /**

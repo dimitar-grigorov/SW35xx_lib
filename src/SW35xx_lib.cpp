@@ -41,7 +41,8 @@
 namespace SW35xx_lib
 {
 
-  SW35xx::SW35xx(I2CInterface &i2c) : _i2c(i2c) {}
+  // SW35xx::SW35xx(I2CInterface &i2c) : _i2c(i2c) {}
+  SW35xx::SW35xx(TwoWire &i2c) : _i2c(i2c) {}  
   SW35xx::~SW35xx() {}
 
   int SW35xx::i2cReadReg8(const uint8_t reg)
