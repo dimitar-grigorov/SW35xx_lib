@@ -11,6 +11,13 @@
 namespace SW35xx_lib
 {
 
+  struct PowerStatus
+  {
+    bool buckOn;
+    bool port1On;
+    bool port2On;
+  };
+
   class SW35xx
   {
   public:
@@ -50,6 +57,28 @@ namespace SW35xx_lib
       return (aType < FAST_CHARGE_TYPE_COUNT)
                  ? names[aType]
                  : "Unknown";
+    }
+
+    enum PowerLimit_t
+    {
+      PL_18W = 0,
+      PL_24W = 1,
+      PL_36W = 2,
+      PL_60W = 3,
+      PL_COUNT
+    };
+
+    /**
+     * @brief Turn a PowerLimit_t into a human string ("18W", etc.)
+     */
+    static inline const char *powerLimitToString(PowerLimit_t lim)
+    {
+      static const char *names[PL_COUNT] = {
+          "18W",
+          "24W",
+          "36W",
+          "60W"};
+      return (lim < PL_COUNT) ? names[lim] : "Unknown";
     }
 
     enum PDCmd_t
@@ -107,6 +136,18 @@ namespace SW35xx_lib
     // SW35xx(TwoWire &i2c = Wire);
     ~SW35xx();
     void begin();
+
+    /**
+     * @brief Read PWR_CONF (Reg 0xA6) bits [1:0].
+     */
+    PowerLimit_t getPowerLimit();
+
+    /**
+     * @brief Write PWR_CONF (Reg 0xA6) bits [1:0].
+     * @param lim one of PL_18W, PL_24W, PL_36W or PL_60W.
+     */
+    void setPowerLimit(PowerLimit_t lim);
+
     /**
      * @brief 读取当前充电状态
      */
@@ -152,6 +193,12 @@ namespace SW35xx_lib
     void setMaxCurrentsPPS(uint32_t ma_pps1, uint32_t ma_pps2);
 
     void resetPDLimits();
+
+    /**
+     * @brief Read the PWR_STATUS register (0x07) and parse the three control bits.
+     * @return a PowerStatus struct with buckOn, port1On, port2On flags.
+     */
+    PowerStatus getPowerStatus();
 
     /**
     //  * @brief 重置最大输出电流
