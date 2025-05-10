@@ -41,7 +41,7 @@
 namespace SW35xx_lib
 {
 
-  SW35xx::SW35xx(TwoWire &i2c) : _i2c(i2c) {}
+  SW35xx::SW35xx(I2CInterface &i2c) : _i2c(i2c) {}
   SW35xx::~SW35xx() {}
 
   int SW35xx::i2cReadReg8(const uint8_t reg)
@@ -63,7 +63,7 @@ namespace SW35xx_lib
         continue;
       }
 
-      /* Wait until data is available if required */
+      // Wait until data is available if required
       for (int k = 0; !_i2c.available() && k < I2C_RETRIES; k++)
       {
         delay(10);
@@ -83,7 +83,6 @@ namespace SW35xx_lib
   int SW35xx::i2cWriteReg8(const uint8_t reg, const uint8_t data)
   {
     int error = -1;
-
     for (int i = 0; i < I2C_RETRIES; i++)
     {
       _i2c.beginTransmission(SW35XX_ADDRESS);
@@ -101,23 +100,21 @@ namespace SW35xx_lib
         return 0;
       }
     }
-
     return error;
   }
 
   void SW35xx::begin()
   {
     // 启用输入电压读取
+    // Enable voltage reading
     i2cWriteReg8(SW35XX_I2C_CTRL, 0x02);
   }
 
   uint16_t SW35xx::readADCDataBuffer(const enum ADCDataType type)
   {
     i2cWriteReg8(SW35XX_ADC_DATA_TYPE, type);
-
     uint16_t value = i2cReadReg8(SW35XX_ADC_DATA_BUF_H) << 4;
     value |= i2cReadReg8(SW35XX_ADC_DATA_BUF_L) | 0x0f;
-
     return value;
   }
 
@@ -131,12 +128,16 @@ namespace SW35xx_lib
     if (useADCDataBuffer)
     {
       // 读取输入电压
+      // Read input voltage
       vin = readADCDataBuffer(ADC_VIN);
       // 读取输出电压
+      // Read output voltage
       vout = readADCDataBuffer(ADC_VOUT);
       // 读取接口1输出电流
+      // Read USB-C output current
       iout_usbc = readADCDataBuffer(ADC_IOUT_USB_C);
       // 读取接口2输出电流
+      // Read USB-A output current
       iout_usba = readADCDataBuffer(ADC_IOUT_USB_A);
     }
     else
@@ -166,6 +167,7 @@ namespace SW35xx_lib
     else
       iout_usba_mA = 0;
     // 读取pd版本和快充协议
+    // Read PD version and fast charge protocol
     const uint8_t status = i2cReadReg8(SW35XX_FCX_STATUS);
     PDVersion = ((status & 0x30) >> 4) + 1;
     fastChargeType = (fastChargeType_t)(status & 0x0f);
@@ -277,7 +279,6 @@ namespace SW35xx_lib
     unlock_i2c_write();
 
     i2cWriteReg8(SW35XX_PD_CONF8, tmp);
-
     i2cWriteReg8(SW35XX_PD_CONF1, ma_5v / 50);
     i2cWriteReg8(SW35XX_PD_CONF2, ma_9v / 50);
     i2cWriteReg8(SW35XX_PD_CONF3, ma_12v / 50);
@@ -308,10 +309,8 @@ namespace SW35xx_lib
     unlock_i2c_write();
 
     i2cWriteReg8(SW35XX_PD_CONF8, tmp);
-
     i2cWriteReg8(SW35XX_PD_CONF6, ma_pps1 / 50);
     i2cWriteReg8(SW35XX_PD_CONF7, ma_pps2 / 50);
-
     lock_i2c_write();
   }
 
