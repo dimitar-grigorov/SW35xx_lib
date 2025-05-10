@@ -15,60 +15,14 @@ TwoWireWrapper i2cWrapper(Wire);
 
 SW35xx device(i2cWrapper);
 
-const char *fastChargeType2String(SW35xx::fastChargeType_t fastChargeType)
-{
-  switch (fastChargeType)
-  {
-  case SW35xx::NOT_FAST_CHARGE:
-    return "Not fast charge";
-    break;
-  case SW35xx::QC2:
-    return "QC2.0";
-    break;
-  case SW35xx::QC3:
-    return "QC3.0";
-    break;
-  case SW35xx::FCP:
-    return "FCP";
-    break;
-  case SW35xx::SCP:
-    return "SCP";
-    break;
-  case SW35xx::PD_FIX:
-    return "PD Fix";
-    break;
-  case SW35xx::PD_PPS:
-    return "PD PPS";
-    break;
-  case SW35xx::MTKPE1:
-    return "MTK PE1.1";
-    break;
-  case SW35xx::MTKPE2:
-    return "MTK PE2.0";
-    break;
-  case SW35xx::LVDC:
-    return "LVDC";
-    break;
-  case SW35xx::SFCP:
-    return "SFCP";
-    break;
-  case SW35xx::AFC:
-    return "AFC";
-    break;
-  default:
-    return "unknown";
-    break;
-  }
-}
-
 void setup()
 {
   Serial.begin(9600);
 
   device.begin();
 
-  // sw.setMaxCurrent5A();
-  // sw.resetPDLimits();
+  // device.setMaxCurrent5A();
+  device.resetPDLimits();
 }
 
 void loop()
@@ -89,7 +43,7 @@ void loop()
   Serial.print(device.iout_usba_mA);
   Serial.println(" mA");
   Serial.print("Current fast charge type: ");
-  Serial.println(fastChargeType2String(device.fastChargeType));
+  Serial.println(device.fastChargeTypeToString(device.fastChargeType));
   if (device.fastChargeType == SW35xx::PD_FIX || device.fastChargeType == SW35xx::PD_PPS)
   {
     Serial.print("Current PD version: ");

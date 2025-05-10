@@ -27,8 +27,30 @@ namespace SW35xx_lib
       MTKPE2,
       LVDC,
       SFCP,
-      AFC
+      AFC,
+      FAST_CHARGE_TYPE_COUNT
     };
+
+    inline const char *fastChargeTypeToString(fastChargeType_t aType)
+    {
+      // a compile-time array of names
+      static const char *names[FAST_CHARGE_TYPE_COUNT] = {
+          "Not fast charge",
+          "QC2.0",
+          "QC3.0",
+          "FCP",
+          "SCP",
+          "PD Fix",
+          "PD PPS",
+          "MTK PE1.1",
+          "MTK PE2.0",
+          "LVDC",
+          "SFCP",
+          "AFC"};
+      return (aType < FAST_CHARGE_TYPE_COUNT)
+                 ? names[aType]
+                 : "Unknown";
+    }
 
     enum PDCmd_t
     {
@@ -128,6 +150,9 @@ namespace SW35xx_lib
      *       pps1 的最高电压需要大于 pps0 的最高电压，否则 pps1 不会广播;
      */
     void setMaxCurrentsPPS(uint32_t ma_pps1, uint32_t ma_pps2);
+
+    void resetPDLimits();
+
     /**
     //  * @brief 重置最大输出电流
     //  *

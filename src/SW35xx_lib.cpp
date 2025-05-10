@@ -316,4 +316,30 @@ namespace SW35xx_lib
     lock_i2c_write();
   }
 
+  void SW35xx::resetPDLimits()
+  {
+    // 1) Unlock writes to PD_CONF registers
+    unlock_i2c_write();
+
+    // 2) Restore each PD_CONF register to its default 0xFF
+    const uint8_t pdRegs[] = {
+        SW35XX_PD_CONF1, SW35XX_PD_CONF2, SW35XX_PD_CONF3,
+        SW35XX_PD_CONF4, SW35XX_PD_CONF5, SW35XX_PD_CONF6,
+        SW35XX_PD_CONF7, SW35XX_PD_CONF8, SW35XX_PD_CONF9,
+        SW35XX_PD_CONF10};
+    for (uint8_t reg : pdRegs)
+    {
+      i2cWriteReg8(reg, 0xFF);
+    }
+
+    // 3) Lock I²C-write again
+    lock_i2c_write();
+
+    // 4a) Re-broadcast the (now default) PDOs
+    // rebroadcastPDO();
+
+    // —or— 4b) force a PD hard-reset to renegotiate from scratch
+    sendPDCmd(PDCmd_t::HARDRESET);
+  }
+
 } // namespace SW35xx_lib
