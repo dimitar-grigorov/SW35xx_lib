@@ -1,0 +1,14 @@
+{
+  "name": "SW35xx_lib",
+  "description": "Control SW35xx series fast charger chips.",
+  "keywords": "i2c,SW3518,SW3518s",
+  "authors":{
+    "name": "dimitar-grigorov"
+  },
+  "repository":{
+    "type": "git",
+    "url": "https://github.com/dimitar-grigorov/SW35xx_lib.git"
+  },
+  "version": "1.0.0",
+  "framework": "arduino"
+}
