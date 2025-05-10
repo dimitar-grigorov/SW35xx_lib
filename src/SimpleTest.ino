@@ -15,17 +15,10 @@ TwoWireWrapper i2cWrapper(Wire);
 
 SW35xx device(i2cWrapper);
 
-void setup()
-{
-  Serial.begin(9600);
+#define PRINT_INTERVAL 4000UL
+unsigned long lastPrint = 0;
 
-  device.begin();
-
-  // device.setMaxCurrent5A();
-  device.resetPDLimits();
-}
-
-void loop()
+void reportStatus()
 {
   Serial.println("Reading Status: ");
   device.readStatus();
@@ -50,6 +43,79 @@ void loop()
     Serial.println(device.PDVersion);
   }
   Serial.println("=======================================");
-  Serial.println();
-  delay(3000);
+}
+
+void printMenu()
+{
+  Serial.println(F("\n=== MENU ==="));
+  Serial.println(F("1: setMaxCurrent5A()"));
+  Serial.println(F("2: resetPDLimits()"));
+  Serial.println(F("x: exit menu"));
+  Serial.print(F("> "));
+}
+
+void showMenu()
+{
+  printMenu();
+  while (true)
+  {
+    if (!Serial.available())
+    {
+      delay(10);
+      continue;
+    }
+    char c = Serial.read();
+    if (c == '\n' || c == '\r')
+      continue;
+
+    switch (c)
+    {
+    case '1':
+      device.setMaxCurrent5A();
+      Serial.println("Max current set to 5A");
+      printMenu();
+      break;
+    case '2':
+      device.resetPDLimits();
+      Serial.println("PD limits reset");
+      printMenu();
+      break;
+    case 'x':
+    case 'X':
+      Serial.println(F("Exiting menu.\n"));
+      while (Serial.available())
+        Serial.read();
+      lastPrint = millis();
+      return;
+    default:
+      Serial.println(F("Invalid choice"));
+      printMenu();
+      break;
+    }
+  }
+}
+
+void setup()
+{
+  Serial.begin(9600);
+  while (!Serial)
+  { /* wait */
+  }
+  device.begin();
+  Serial.println(F("SW35xx interface ready."));
+}
+
+void loop()
+{
+  unsigned long now = millis();
+  if (now - lastPrint >= PRINT_INTERVAL)
+  {
+    lastPrint = now;
+    reportStatus();
+  }
+  if (Serial.available())
+  {
+    showMenu();
+  }
+  delay(20);
 }
