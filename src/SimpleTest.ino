@@ -16,7 +16,7 @@ TwoWireWrapper i2cWrapper(Wire);
 
 SW35xx device(i2cWrapper);
 
-#define PRINT_INTERVAL 4000UL
+#define PRINT_INTERVAL 5000UL
 unsigned long lastPrint = 0;
 
 void reportStatus()
@@ -34,6 +34,12 @@ void reportStatus()
   {
     serial_printf(Serial, "Current PD version: %s\n", device.PDVersion);
   }
+
+  uint8_t ver = device.getChipVersion();
+  if (ver == 0xFF)
+    Serial.println("Chip version: ERROR");
+  else
+    serial_printf(Serial, "Chip version : %d\n", ver);
 
   PowerStatus s = device.getPowerStatus();
   serial_printf(Serial, "Buck: %s, Port1-C: %s, Port2-A %s\n",

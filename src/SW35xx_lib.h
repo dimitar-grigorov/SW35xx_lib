@@ -138,6 +138,12 @@ namespace SW35xx_lib
     void begin();
 
     /**
+     * @brief   Read bits [2:0] of REG 0x01 (chip version).
+     * @return  0–7, or 0xFF on error.
+     */
+    uint8_t getChipVersion();
+
+    /**
      * @brief Read PWR_CONF (Reg 0xA6) bits [1:0].
      */
     PowerLimit_t getPowerLimit();

@@ -119,6 +119,19 @@ namespace SW35xx_lib
     return value;
   }
 
+  uint8_t SW35xx::getChipVersion()
+  {
+    // read REG 0x01
+    int tmp = i2cReadReg8(SW35XX_IC_VERSION);
+    if (tmp < 0)
+    {
+      // error
+      return 0xFF;
+    }
+    // bits [2:0] = version
+    return (uint8_t)(tmp & 0x07);
+  }
+
   // — Read bits [1:0] of PWR_CONF and return as your enum —
   SW35xx::PowerLimit_t SW35xx::getPowerLimit()
   {
