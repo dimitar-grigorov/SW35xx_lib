@@ -7,7 +7,7 @@
 #define SW35XX_SYS_STATUS0 0x07 // System Status 0: buck/C/A on-off
 #define SW35XX_SYS_STATUS1 0x08 // System Status 1: device-present state
 #define SW35XX_I2C_ENABLE 0x12
-#define SW35XX_I2C_CTRL 0x13
+#define SW35XX_ADC_CTRL 0x13
 #define SW35XX_ADC_VIN_H 0x30
 #define SW35XX_ADC_VOUT_H 0x31
 #define SW35XX_ADC_VIN_VOUT_L 0x32
@@ -109,7 +109,9 @@ namespace SW35xx_lib
   {
     _i2c.begin();
     // Enable input voltage reading
-    i2cWriteReg8(SW35XX_I2C_CTRL, 0x02);
+
+    // i2cWriteReg8(SW35XX_ADC_CTRL, 0x02);
+    enableVinAdc(true);
   }
 
   uint16_t SW35xx::readADCDataBuffer(const enum ADCDataType type)
@@ -212,6 +214,49 @@ namespace SW35xx_lib
     i2cWriteReg8(SW35XX_I2C_ENABLE, 0x00);
   }
 
+  // Read bit 1 = Vin ADC enable
+  bool SW35xx::isVinAdcEnabled()
+  {
+    int v = i2cReadReg8(SW35XX_ADC_CTRL);
+    if (v < 0)
+      return false;
+    return ((uint8_t)v & BIT(1)) != 0;
+  }
+
+  // Write bit 1 = Vin ADC enable
+  void SW35xx::enableVinAdc(bool enable)
+  {
+    // read-modify-write
+    uint8_t cur = (uint8_t)i2cReadReg8(SW35XX_ADC_CTRL);
+    if (enable)
+      cur |= BIT(1);
+    else
+      cur &= ~BIT(1);
+    i2cWriteReg8(SW35XX_ADC_CTRL, cur);
+  }
+
+  // Read bit 6 = temp source (0=NTC, 1=45°C)
+  SW35xx::ADCVinTempSource_t SW35xx::getVinTempSource()
+  {
+    int v = i2cReadReg8(SW35XX_ADC_CTRL);
+    if (v < 0)
+      return ADCVTS_NTC;
+    return (((uint8_t)v & BIT(6)) != 0)
+               ? ADCVTS_45C
+               : ADCVTS_NTC;
+  }
+
+  // Write bit 6 = temp source
+  void SW35xx::setVinTempSource(ADCVinTempSource_t src)
+  {
+    uint8_t cur = (uint8_t)i2cReadReg8(SW35XX_ADC_CTRL);
+    if (src == ADCVTS_45C)
+      cur |= BIT(6);
+    else
+      cur &= ~BIT(6);
+    i2cWriteReg8(SW35XX_ADC_CTRL, cur);
+  }
+
   // — Read bits [1:0] of PWR_CONF and return as your enum —
   SW35xx::PowerLimit_t SW35xx::getPowerLimit()
   {
@@ -308,7 +353,8 @@ namespace SW35xx_lib
 
   void SW35xx::rebroadcastPDO()
   {
-    i2cWriteReg8(SW35XX_I2C_CTRL, 0x03);
+    // TODO: Check if this works
+    i2cWriteReg8(SW35XX_ADC_CTRL, 0x03);
   }
 
   void SW35xx::setMaxCurrent5A()

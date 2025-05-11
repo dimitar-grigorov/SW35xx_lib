@@ -101,6 +101,13 @@ namespace SW35xx_lib
                  : names[0];
     }
 
+    /// Which temperature to report under PPS/SCP: real NTC or fixed 45 °C?
+    enum ADCVinTempSource_t
+    {
+      ADCVTS_NTC = 0, ///< report actual NTC temperature
+      ADCVTS_45C = 1  ///< report a constant 45 °C
+    };
+
     enum PowerLimit_t
     {
       PL_18W = 0,
@@ -206,14 +213,38 @@ namespace SW35xx_lib
      * According to REG 0x12 (I²C Enable control), you must write 0x20, then 0x40, then 0x80
      * to REG 0x12 before modifying any 0xB0–0xBF registers.
      */
-    void SW35xx::enableI2CWrite();
+    void enableI2CWrite();
 
     /**
      * @brief  Disable I²C write access (lock out further writes to 0xB0–0xBF).
      *
      * Writing 0x00 to REG 0x12 clears bits 7–5 and re-locks the extended write window.
      */
-    void SW35xx::disableI2CWrite();
+    void disableI2CWrite();
+
+    /**
+     * @brief Read REG 0x13 (“ADC Vin enable”).
+     * @return true if ADC Vin measurement is enabled (bit 1 = 1).
+     */
+    bool isVinAdcEnabled();
+
+    /**
+     * @brief Enable or disable ADC Vin measurement.
+     * @param enable true = turn on Vin ADC (bit 1=1), false = disable (bit 1=0).
+     */
+    void enableVinAdc(bool enable);
+
+    /**
+     * @brief Read REG 0x13 bit 6: whether to report NTC or fixed 45 °C.
+     * @return ADCVTS_NTC or ADCVTS_45C.
+     */
+    ADCVinTempSource_t getVinTempSource();
+
+    /**
+     * @brief Set REG 0x13 bit 6: choose report of NTC vs 45 °C under PPS/SCP.
+     * @param src ADCVTS_NTC → real NTC; ADCVTS_45C → fixed 45 °C.
+     */
+    void setVinTempSource(ADCVinTempSource_t src);
 
     /**
      * @brief Read PWR_CONF (Reg 0xA6) bits [1:0].
