@@ -54,6 +54,10 @@ void reportStatus()
   SW35xx::PresenceStatus ps = device.getPresenceStatus();
   serial_printf(Serial, "Port presence: %s\n", SW35xx::presenceStatusToString(ps));
 
+  serial_printf(Serial, "Vin ADC enabled : %s\n", boolToOnOff(device.isVinAdcEnabled()));
+  serial_printf(Serial, "Vin temp source : %s\n",
+                device.getVinTempSource() == SW35xx::ADCVTS_NTC ? "NTC" : "45°C");
+
   serial_printf(Serial, "Power Limit: %s\n", device.powerLimitToString(device.getPowerLimit()));
 
   Serial.println("=======================================");
@@ -65,6 +69,8 @@ void printMenu()
   Serial.println(F("1: setMaxCurrent5A()"));
   Serial.println(F("2: resetPDLimits()"));
   Serial.println(F("3: setPowerLimit()"));
+  Serial.println(F("4: Toggle Vin ADC enable"));
+  Serial.println(F("5: Toggle Vin temp source (NTC/45C)"));
   Serial.println(F("x: exit menu"));
   Serial.print(F("> "));
 }
@@ -113,6 +119,26 @@ void showMenu()
       device.setPowerLimit((SW35xx::PowerLimit_t)choice);
       Serial.print(F("→ Power limit set to "));
       Serial.println(device.powerLimitToString(device.getPowerLimit()));
+      printMenu();
+      break;
+    }
+    case '4':
+    {
+      bool on = device.isVinAdcEnabled();
+      device.enableVinAdc(!on);
+      serial_printf(Serial, "→ Vin ADC %s\n", boolToOnOff(!on));
+      printMenu();
+      break;
+    }
+    case '5':
+    {
+      SW35xx::ADCVinTempSource_t cur = device.getVinTempSource();
+      SW35xx::ADCVinTempSource_t nxt = (cur == SW35xx::ADCVTS_NTC)
+                                           ? SW35xx::ADCVTS_45C
+                                           : SW35xx::ADCVTS_NTC;
+      device.setVinTempSource(nxt);
+      serial_printf(Serial, "→ Vin temp source: %s\n",
+                    nxt == SW35xx::ADCVTS_NTC ? "NTC" : "45°C");
       printMenu();
       break;
     }
