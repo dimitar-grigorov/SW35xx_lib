@@ -153,10 +153,20 @@ namespace SW35xx_lib
     // 2) Bit 7: fast-charge LED state (0 = off, 1 = on)
     info.ledOn = (status & 0x80) != 0;
 
-    // 3) Bits 5–4: PD protocol version
-    //    1 → PD2.0, 2 → PD3.0, other reserved
-    uint8_t pdBits = (status >> 4) & 0x03;
-    info.pdVersion = pdBits + 1;
+    // bits 5–4 = PD version: 1 → PD2.0, 2 → PD3.0, else = none
+    uint8_t pdVer = (status >> 4) & 0x03;
+    switch (pdVer)
+    {
+    case 1:
+      info.pdVersion = 2;
+      break;
+    case 2:
+      info.pdVersion = 3;
+      break;
+    default:
+      info.pdVersion = 0;
+      break;
+    }
 
     // 4) Bits 3–0: fast-charge protocol indicator
     //    1 = QC2.0, 2 = QC3.0, 3 = FCP, 4 = SCP,
@@ -258,11 +268,10 @@ namespace SW35xx_lib
     i2cWriteReg8(SW35XX_ADC_CTRL, cur);
   }
 
-  // — Read bits [1:0] of PWR_CONF and return as your enum —
+  // — Read bits [1:0] of PWR_CONF
   SW35xx::PowerLimit_t SW35xx::getPowerLimit()
   {
     uint8_t r = i2cReadReg8(SW35XX_PWR_CONF);
-    // C‑style cast to your enum, exactly like fastChargeType above
     return (PowerLimit_t)(r & 0x03);
   }
 
@@ -270,7 +279,7 @@ namespace SW35xx_lib
   void SW35xx::setPowerLimit(PowerLimit_t lim)
   {
     uint8_t old = i2cReadReg8(SW35XX_PWR_CONF);
-    // pull only the low two bits from your enum
+    // pull only the low two bits
     uint8_t nw = (old & 0xFC) | ((uint8_t)lim & 0x03);
 
     enableI2CWrite();
@@ -322,10 +331,6 @@ namespace SW35xx_lib
       iout_usba_mA = iout_usba * 5 / 2;
     else
       iout_usba_mA = 0;
-    // Read PD version and fast charge protocol
-    const uint8_t status = i2cReadReg8(SW35XX_FCX_STATUS);
-    PDVersion = ((status & 0x30) >> 4) + 1;
-    fastChargeType = (fastChargeType_t)(status & 0x0f);
   }
 
   float SW35xx::readTemperature(const bool useADCDataBuffer)

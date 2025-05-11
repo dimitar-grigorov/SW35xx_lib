@@ -336,17 +336,6 @@ namespace SW35xx_lib
      * @brief Output current 2(type-A)
      */
     uint16_t iout_usba_mA;
-    /**
-     * @brief Fast charging protocol
-     */
-    enum fastChargeType_t fastChargeType;
-    /**
-     * @brief PD version (2 or 3)
-     */
-    uint8_t PDVersion;
-
-  public:
-    // TODO
 
   private:
     bool _last_config_read_success;
