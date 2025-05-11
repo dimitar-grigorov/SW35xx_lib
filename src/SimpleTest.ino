@@ -28,7 +28,7 @@ void reportStatus()
   serial_printf(Serial, "Output voltage: %d mV\n", device.vout_mV);
   serial_printf(Serial, "USB-C current : %d mA\n", device.iout_usbc_mA);
   serial_printf(Serial, "USB-A current : %d mA\n", device.iout_usba_mA);
-  serial_printf(Serial, "Current fast charge type: %s\n", device.fastChargeTypeToString(device.fastChargeType));
+  serial_printf(Serial, "Fast charge type: %s\n", device.fastChargeTypeToString(device.fastChargeType));
 
   if (device.fastChargeType == SW35xx::PD_FIX || device.fastChargeType == SW35xx::PD_PPS)
   {
@@ -40,6 +40,12 @@ void reportStatus()
     Serial.println("Chip version: ERROR");
   else
     serial_printf(Serial, "Chip version : %d\n", ver);
+
+  SW35xx::FastChargeInfo fc = device.getFastChargeInfo();
+  serial_printf(Serial, "Fast-charge LED : %s\n", boolToOnOff(fc.ledOn));
+  serial_printf(Serial, "PD Version      : %d\n", fc.pdVersion);
+  serial_printf(Serial, "Protocol        : %s\n",
+                device.fastChargeTypeToString(fc.protocol));
 
   PowerStatus s = device.getPowerStatus();
   serial_printf(Serial, "Buck: %s, Port1-C: %s, Port2-A %s\n",

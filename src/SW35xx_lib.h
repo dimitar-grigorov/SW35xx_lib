@@ -59,6 +59,13 @@ namespace SW35xx_lib
                  : "Unknown";
     }
 
+    struct FastChargeInfo
+    {
+      bool ledOn;                ///< true if the fast-charge LED is lit (bit 7)
+      uint8_t pdVersion;         ///< 2 for PD2.0, 3 for PD3.0 (bits 5–4 + 1)
+      fastChargeType_t protocol; ///< which QC/PD/VOOC/etc (bits 3–0)
+    };
+
     enum PowerLimit_t
     {
       PL_18W = 0,
@@ -142,6 +149,12 @@ namespace SW35xx_lib
      * @return  0–7, or 0xFF on error.
      */
     uint8_t getChipVersion();
+
+    /**
+     * @brief Read REG 0x06: fast-charge indicator, PD version, and protocol.
+     * @return a FastChargeInfo struct (all fields zeroed on I²C error)
+     */
+    FastChargeInfo getFastChargeInfo();
 
     /**
      * @brief Read PWR_CONF (Reg 0xA6) bits [1:0].

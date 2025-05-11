@@ -132,6 +132,37 @@ namespace SW35xx_lib
     return (uint8_t)(tmp & 0x07);
   }
 
+  // Read out and decode REG 0x06: Fast charge indicator status
+  SW35xx::FastChargeInfo SW35xx::getFastChargeInfo()
+  {
+    FastChargeInfo info = {false, 0, NOT_FAST_CHARGE};
+
+    // 1) Read the raw status byte
+    int tmpStatus = i2cReadReg8(SW35XX_FCX_STATUS);
+    if (tmpStatus < 0)
+    {
+      // I²C error, leave everything zero/false
+      return info;
+    }
+    uint8_t status = (uint8_t)tmpStatus;
+
+    // 2) Bit 7: fast-charge LED state (0 = off, 1 = on)
+    info.ledOn = (status & 0x80) != 0;
+
+    // 3) Bits 5–4: PD protocol version
+    //    1 → PD2.0, 2 → PD3.0, other reserved
+    uint8_t pdBits = (status >> 4) & 0x03;
+    info.pdVersion = pdBits + 1;
+
+    // 4) Bits 3–0: fast-charge protocol indicator
+    //    1 = QC2.0, 2 = QC3.0, 3 = FCP, 4 = SCP,
+    //    5 = PD FIX, 6 = PD PPS, 7 = PE1.1, 8 = PE2.0,
+    //    9 = VOOC, 10 = SFCP, 11 = AFC, else = reserved
+    info.protocol = (fastChargeType_t)(status & 0x0F);
+
+    return info;
+  }
+
   // — Read bits [1:0] of PWR_CONF and return as your enum —
   SW35xx::PowerLimit_t SW35xx::getPowerLimit()
   {
