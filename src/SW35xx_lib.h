@@ -168,9 +168,6 @@ namespace SW35xx_lib
     int i2cReadReg8(const uint8_t reg);
     int i2cWriteReg8(const uint8_t reg, const uint8_t data);
 
-    void unlock_i2c_write();
-    void lock_i2c_write();
-
     uint16_t readADCDataBuffer(const enum ADCDataType type);
 
   public:
@@ -202,6 +199,21 @@ namespace SW35xx_lib
      * @return A PresenceStatus enum telling you which pattern was seen.
      */
     PresenceStatus getPresenceStatus();
+
+    /**
+     * @brief  Enable I²C write access to the extended PD_CONF (0xB0–0xBF) registers.
+     *
+     * According to REG 0x12 (I²C Enable control), you must write 0x20, then 0x40, then 0x80
+     * to REG 0x12 before modifying any 0xB0–0xBF registers.
+     */
+    void SW35xx::enableI2CWrite();
+
+    /**
+     * @brief  Disable I²C write access (lock out further writes to 0xB0–0xBF).
+     *
+     * Writing 0x00 to REG 0x12 clears bits 7–5 and re-locks the extended write window.
+     */
+    void SW35xx::disableI2CWrite();
 
     /**
      * @brief Read PWR_CONF (Reg 0xA6) bits [1:0].

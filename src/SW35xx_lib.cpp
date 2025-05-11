@@ -200,6 +200,18 @@ namespace SW35xx_lib
     }
   }
 
+  void SW35xx::enableI2CWrite()
+  {
+    i2cWriteReg8(SW35XX_I2C_ENABLE, 0x20);
+    i2cWriteReg8(SW35XX_I2C_ENABLE, 0x40);
+    i2cWriteReg8(SW35XX_I2C_ENABLE, 0x80);
+  }
+
+  void SW35xx::disableI2CWrite()
+  {
+    i2cWriteReg8(SW35XX_I2C_ENABLE, 0x00);
+  }
+
   // — Read bits [1:0] of PWR_CONF and return as your enum —
   SW35xx::PowerLimit_t SW35xx::getPowerLimit()
   {
@@ -215,9 +227,9 @@ namespace SW35xx_lib
     // pull only the low two bits from your enum
     uint8_t nw = (old & 0xFC) | ((uint8_t)lim & 0x03);
 
-    unlock_i2c_write();
+    enableI2CWrite();
     i2cWriteReg8(SW35XX_PWR_CONF, nw);
-    lock_i2c_write();
+    disableI2CWrite();
   }
 
   void SW35xx::readStatus(const bool useADCDataBuffer)
@@ -288,18 +300,6 @@ namespace SW35xx_lib
     return temperature * 0.5;
   }
 
-  void SW35xx::unlock_i2c_write()
-  {
-    i2cWriteReg8(SW35XX_I2C_ENABLE, 0x20);
-    i2cWriteReg8(SW35XX_I2C_ENABLE, 0x40);
-    i2cWriteReg8(SW35XX_I2C_ENABLE, 0x80);
-  }
-
-  void SW35xx::lock_i2c_write()
-  {
-    i2cWriteReg8(SW35XX_I2C_ENABLE, 0x00);
-  }
-
   void SW35xx::sendPDCmd(SW35xx::PDCmd_t cmd)
   {
     i2cWriteReg8(SW35XX_PD_SRC_REQ, (const uint8_t)cmd);
@@ -313,14 +313,14 @@ namespace SW35xx_lib
 
   void SW35xx::setMaxCurrent5A()
   {
-    unlock_i2c_write();
+    enableI2CWrite();
     i2cWriteReg8(SW35XX_PD_CONF1, 0b01100100);
     i2cWriteReg8(SW35XX_PD_CONF2, 0b01100100);
     i2cWriteReg8(SW35XX_PD_CONF3, 0b01100100);
     i2cWriteReg8(SW35XX_PD_CONF4, 0b01100100);
     i2cWriteReg8(SW35XX_PD_CONF6, 0b01100100);
     i2cWriteReg8(SW35XX_PD_CONF7, 0b01100100);
-    lock_i2c_write();
+    disableI2CWrite();
   }
 
   void SW35xx::setQuickChargeConfiguration(const uint16_t flags,
@@ -332,10 +332,10 @@ namespace SW35xx_lib
     const uint8_t conf1 = validFlags;
     const uint8_t conf2 = (validFlags >> 8) | (validPower << 2);
 
-    unlock_i2c_write();
+    enableI2CWrite();
     i2cWriteReg8(SW35XX_QC_CONF1, conf1);
     i2cWriteReg8(SW35XX_QC_CONF2, conf2);
-    lock_i2c_write();
+    disableI2CWrite();
   }
 
   void SW35xx::setMaxCurrentsFixed(uint32_t ma_5v, uint32_t ma_9v, uint32_t ma_12v, uint32_t ma_15v, uint32_t ma_20v)
@@ -373,7 +373,7 @@ namespace SW35xx_lib
     else
       tmp |= 0b00100000;
 
-    unlock_i2c_write();
+    enableI2CWrite();
 
     i2cWriteReg8(SW35XX_PD_CONF8, tmp);
     i2cWriteReg8(SW35XX_PD_CONF1, ma_5v / 50);
@@ -382,7 +382,7 @@ namespace SW35xx_lib
     i2cWriteReg8(SW35XX_PD_CONF4, ma_15v / 50);
     i2cWriteReg8(SW35XX_PD_CONF5, ma_20v / 50);
 
-    lock_i2c_write();
+    disableI2CWrite();
   }
 
   void SW35xx::setMaxCurrentsPPS(uint32_t ma_pps1, uint32_t ma_pps2)
@@ -403,18 +403,18 @@ namespace SW35xx_lib
     else
       tmp |= 0b10000000;
 
-    unlock_i2c_write();
+    enableI2CWrite();
 
     i2cWriteReg8(SW35XX_PD_CONF8, tmp);
     i2cWriteReg8(SW35XX_PD_CONF6, ma_pps1 / 50);
     i2cWriteReg8(SW35XX_PD_CONF7, ma_pps2 / 50);
-    lock_i2c_write();
+    disableI2CWrite();
   }
 
   void SW35xx::resetPDLimits()
   {
     // 1) Unlock writes to PD_CONF registers
-    unlock_i2c_write();
+    enableI2CWrite();
 
     // 2) Restore each PD_CONF register to its default 0xFF
     const uint8_t pdRegs[] = {
@@ -428,7 +428,7 @@ namespace SW35xx_lib
     }
 
     // 3) Lock I²C-write again
-    lock_i2c_write();
+    disableI2CWrite();
 
     // 4a) Re-broadcast the (now default) PDOs
     // rebroadcastPDO();
