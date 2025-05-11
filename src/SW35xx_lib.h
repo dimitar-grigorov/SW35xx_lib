@@ -58,7 +58,7 @@ namespace SW35xx_lib
       fastChargeType_t protocol; ///< which QC/PD/VOOC/etc (bits 3–0)
     };
 
-    struct SystemStatus
+    struct SwitchStatus
     {
       bool buckOn;  ///< Bit 2: buck switch (1 = on, 0 = off)
       bool portCOn; ///< Bit 0: C-port switch (1 = on, 0 = off)
@@ -159,7 +159,7 @@ namespace SW35xx_lib
      * @brief Read the PWR_STATUS register (0x07) and decode buck/C/A-port on/off.
      * @return SystemStatus with each flag true = switch closed/on.
      */
-    SystemStatus getSystemStatus();
+    SwitchStatus getSwitchStatus();
 
     /**
      * @brief Read PWR_CONF (Reg 0xA6) bits [1:0].

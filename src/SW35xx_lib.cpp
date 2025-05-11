@@ -4,7 +4,8 @@
 #define SW35XX_ADDRESS 0x3c
 #define SW35XX_IC_VERSION 0x01
 #define SW35XX_FCX_STATUS 0x06
-#define SW35XX_PWR_STATUS 0x07
+#define SW35XX_SYS_STATUS0 0x07 // System Status 0: buck/C/A on-off
+#define SW35XX_SYS_STATUS1 0x08 // System Status 1: device-present state
 #define SW35XX_I2C_ENABLE 0x12
 #define SW35XX_I2C_CTRL 0x13
 #define SW35XX_ADC_VIN_H 0x30
@@ -163,17 +164,17 @@ namespace SW35xx_lib
     return info;
   }
 
-  SW35xx::SystemStatus SW35xx::getSystemStatus()
+  SW35xx::SwitchStatus SW35xx::getSwitchStatus()
   {
-    int tmp = i2cReadReg8(SW35XX_PWR_STATUS);
+    int tmp = i2cReadReg8(SW35XX_SYS_STATUS0);
     if (tmp < 0)
     {
       // on I²C error, return all false
-      return SystemStatus{false, false, false};
+      return SwitchStatus{false, false, false};
     }
     uint8_t r = (uint8_t)tmp;
 
-    return SystemStatus{
+    return SwitchStatus{
         /* buckOn   */ (r & BIT(2)) != 0,
         /* portCOn  */ (r & BIT(0)) != 0,
         /* portAOn  */ (r & BIT(1)) != 0};
