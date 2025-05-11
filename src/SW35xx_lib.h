@@ -65,6 +65,42 @@ namespace SW35xx_lib
       bool portAOn; ///< Bit 1: A-port switch (1 = on, 0 = off)
     };
 
+    /// Decoded meanings for REG 0x08 bits 7–4.
+    /// Note: Port A is considered “connected” if current > 80 mA,
+    /// and “disconnected” if current drops below 15 mA.
+    enum class PresenceStatus : uint8_t
+    {
+      AA_None = 1,   ///< AA mode: neither A1 nor A2 has a device
+      AA_A1 = 2,     ///< AA mode: only A1 has a device
+      AA_A2 = 3,     ///< AA mode: only A2 has a device
+      AA_Both = 4,   ///< AA mode: both A1 & A2 have devices
+      AC_None = 5,   ///< AC mode: neither A nor C has a device
+      AC_C = 6,      ///< AC mode: only C has a device
+      AC_A = 7,      ///< AC mode: only A has a device
+      AC_Both = 8,   ///< AC mode: both A & C have devices
+      Unknown = 0xFF ///< any other code
+    };
+
+    static inline const char *presenceStatusToString(PresenceStatus s)
+    {
+      // index 0 = "Unknown", 1..8 = the codes above
+      static const char *names[] = {
+          "Unknown",
+          "AA: none",
+          "AA: only A1",
+          "AA: only A2",
+          "AA: A1 & A2",
+          "AC: none",
+          "AC: only C",
+          "AC: only A",
+          "AC: A & C"};
+      uint8_t idx = (uint8_t)s;
+      // idx runs 0..8, names has 9 entries
+      return (idx < (sizeof(names) / sizeof(names[0])))
+                 ? names[idx]
+                 : names[0];
+    }
+
     enum PowerLimit_t
     {
       PL_18W = 0,
@@ -160,6 +196,12 @@ namespace SW35xx_lib
      * @return SystemStatus with each flag true = switch closed/on.
      */
     SwitchStatus getSwitchStatus();
+
+    /**
+     * @brief Read REG 0x08 ("System status 1") and decode which ports see a connected device.
+     * @return A PresenceStatus enum telling you which pattern was seen.
+     */
+    PresenceStatus getPresenceStatus();
 
     /**
      * @brief Read PWR_CONF (Reg 0xA6) bits [1:0].

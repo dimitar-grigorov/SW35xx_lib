@@ -50,6 +50,10 @@ void reportStatus()
   SW35xx::SwitchStatus s = device.getSwitchStatus();
   serial_printf(Serial, "Buck: %s, Port1-C: %s, Port2-A %s\n",
                 boolToOnOff(s.buckOn), boolToOnOff(s.portAOn), boolToOnOff(s.portCOn));
+
+  SW35xx::PresenceStatus ps = device.getPresenceStatus();
+  serial_printf(Serial, "Port presence: %s\n", SW35xx::presenceStatusToString(ps));
+
   serial_printf(Serial, "Power Limit: %s\n", device.powerLimitToString(device.getPowerLimit()));
 
   Serial.println("=======================================");

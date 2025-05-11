@@ -180,6 +180,26 @@ namespace SW35xx_lib
         /* portAOn  */ (r & BIT(1)) != 0};
   }
 
+  SW35xx::PresenceStatus SW35xx::getPresenceStatus()
+  {
+    int raw = i2cReadReg8(SW35XX_SYS_STATUS1);
+    if (raw < 0)
+    {
+      return PresenceStatus::Unknown;
+    }
+    // take bits 7–4
+    uint8_t code = ((uint8_t)raw >> 4) & 0x0F;
+    // valid codes are 1..8
+    if (code >= 1 && code <= 8)
+    {
+      return (PresenceStatus)code;
+    }
+    else
+    {
+      return PresenceStatus::Unknown;
+    }
+  }
+
   // — Read bits [1:0] of PWR_CONF and return as your enum —
   SW35xx::PowerLimit_t SW35xx::getPowerLimit()
   {
