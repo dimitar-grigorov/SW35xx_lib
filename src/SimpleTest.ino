@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <SoftwareWire.h>
 #include <SW35xx_lib.h>
+#include "SerialUtils.h"
 #include "TwoWireWrapper.h"
 #include "SoftwareWireWrapper.h"
 
@@ -23,36 +24,21 @@ void reportStatus()
   Serial.println("Reading Status: ");
   device.readStatus();
   Serial.println("=======================================");
-  Serial.print("Current input voltage: ");
-  Serial.print(device.vin_mV);
-  Serial.println(" mV");
-  Serial.print("Current output voltage: ");
-  Serial.print(device.vout_mV);
-  Serial.println(" mV");
-  Serial.print("Current USB-C current: ");
-  Serial.print(device.iout_usbc_mA);
-  Serial.println(" mA");
-  Serial.print("Current USB-A current: ");
-  Serial.print(device.iout_usba_mA);
-  Serial.println(" mA");
-  Serial.print("Current fast charge type: ");
-  Serial.println(device.fastChargeTypeToString(device.fastChargeType));
+  serial_printf(Serial, "Input voltage : %d mV\n", device.vin_mV);
+  serial_printf(Serial, "Output voltage: %d mV\n", device.vout_mV);
+  serial_printf(Serial, "USB-C current : %d mA\n", device.iout_usbc_mA);
+  serial_printf(Serial, "USB-A current : %d mA\n", device.iout_usba_mA);
+  serial_printf(Serial, "Current fast charge type: %s\n", device.fastChargeTypeToString(device.fastChargeType));
+
   if (device.fastChargeType == SW35xx::PD_FIX || device.fastChargeType == SW35xx::PD_PPS)
   {
-    Serial.print("Current PD version: ");
-    Serial.println(device.PDVersion);
+    serial_printf(Serial, "Current PD version: %s\n", device.PDVersion);
   }
 
   PowerStatus s = device.getPowerStatus();
-  Serial.print(F("Buck converter : "));
-  Serial.println(s.buckOn ? F("on") : F("off"));
-  Serial.print(F("Port1 (USB-C): "));
-  Serial.println(s.port1On ? F("on") : F("off"));
-  Serial.print(F("Port2 (USB-A): "));
-  Serial.println(s.port2On ? F("on") : F("off"));
-
-  Serial.print("Power Limit: ");
-  Serial.println(device.powerLimitToString(device.getPowerLimit()));
+  serial_printf(Serial, "Buck: %s, Port1-C: %s, Port2-A %s\n",
+                boolToOnOff(s.buckOn), boolToOnOff(s.port1On), boolToOnOff(s.port2On));
+  serial_printf(Serial, "Power Limit: %s\n", device.powerLimitToString(device.getPowerLimit()));
 
   Serial.println("=======================================");
 }
@@ -95,12 +81,7 @@ void showMenu()
     case '3':
     {
       // Prompt for new power limit
-      Serial.println(F("\nChoose non‑PD power limit:"));
-      Serial.println(F("0: 18W"));
-      Serial.println(F("1: 24W"));
-      Serial.println(F("2: 36W"));
-      Serial.println(F("3: 60W"));
-      Serial.print(F("> "));
+      serial_printf(Serial, "\nChoose non‑PD power limit:\n0: 18W\n1: 24W\n2: 36W\n3: 60W\n> ");
       // wait for a digit
       while (!Serial.available())
       {
