@@ -8,18 +8,19 @@
 #define SW35XX_SYS_STATUS1 0x08 // System Status 1: device-present state
 #define SW35XX_I2C_ENABLE 0x12
 #define SW35XX_ADC_CTRL 0x13
-#define SW35XX_ADC_VIN_H 0x30
-#define SW35XX_ADC_VOUT_H 0x31
-#define SW35XX_ADC_VIN_VOUT_L 0x32
-#define SW35XX_ADC_IOUT_USBC_H 0x33
-#define SW35XX_ADC_IOUT_USBA_H 0x34
-#define SW35XX_ADC_IOUT_USBC_USBA_L 0x35
-#define SW35XX_ADC_TS_H 0x37
-#define SW35XX_ADC_TS_L 0x38
-#define SW35XX_ADC_DATA_TYPE 0x3a
-#define SW35XX_ADC_DATA_BUF_H 0x3b
-#define SW35XX_PD_SRC_REQ 0x70
-#define SW35XX_ADC_DATA_BUF_L 0x3c
+#define SW35XX_ADC_VIN_H 0x30            // Not re-implemented
+#define SW35XX_ADC_VOUT_H 0x31           // Not re-implemented
+#define SW35XX_ADC_VIN_VOUT_L 0x32       // Not re-implemented
+#define SW35XX_ADC_IOUT_USBC_H 0x33      // Not re-implemented
+#define SW35XX_ADC_IOUT_USBA_H 0x34      // Not re-implemented
+#define SW35XX_ADC_IOUT_USBC_USBA_L 0x35 // Not re-implemented
+#define SW35XX_ADC_TS_H 0x37             // Not re-implemented
+#define SW35XX_ADC_TS_L 0x38             // Not re-implemented
+#define SW35XX_ADC_DATA_TYPE 0x3a        // Not re-implemented
+#define SW35XX_ADC_DATA_BUF_H 0x3b       // Not re-implemented
+#define SW35XX_ADC_DATA_BUF_L 0x3c       // Not re-implemented
+#define SW35XX_PD_SRC_REQ 0x70           // Not re-implemented
+#define SW35XX_PD_CMD_EN 0x71            // Not implemented
 #define SW35XX_PWR_CONF 0xa6
 #define SW35XX_QC_CONF0 0xaa
 #define SW35XX_VID_CONF0 0xaf
