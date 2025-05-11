@@ -163,6 +163,22 @@ namespace SW35xx_lib
     return info;
   }
 
+  SW35xx::SystemStatus SW35xx::getSystemStatus()
+  {
+    int tmp = i2cReadReg8(SW35XX_PWR_STATUS);
+    if (tmp < 0)
+    {
+      // on I²C error, return all false
+      return SystemStatus{false, false, false};
+    }
+    uint8_t r = (uint8_t)tmp;
+
+    return SystemStatus{
+        /* buckOn   */ (r & BIT(2)) != 0,
+        /* portCOn  */ (r & BIT(0)) != 0,
+        /* portAOn  */ (r & BIT(1)) != 0};
+  }
+
   // — Read bits [1:0] of PWR_CONF and return as your enum —
   SW35xx::PowerLimit_t SW35xx::getPowerLimit()
   {
@@ -399,15 +415,4 @@ namespace SW35xx_lib
     // —or— 4b) force a PD hard-reset to renegotiate from scratch
     sendPDCmd(PDCmd_t::HARDRESET);
   }
-
-  PowerStatus SW35xx::getPowerStatus()
-  {
-    uint8_t r = i2cReadReg8(SW35XX_PWR_STATUS);
-    // struct PowerStatus { bool buckOn; bool port1On; bool port2On; };
-    return PowerStatus{
-        /* buckOn  */ (r & BIT(2)) != 0,
-        /* port1On */ (r & BIT(0)) != 0,
-        /* port2On */ (r & BIT(1)) != 0};
-  }
-
 } // namespace SW35xx_lib

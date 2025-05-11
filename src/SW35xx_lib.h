@@ -10,14 +10,6 @@
 
 namespace SW35xx_lib
 {
-
-  struct PowerStatus
-  {
-    bool buckOn;
-    bool port1On;
-    bool port2On;
-  };
-
   class SW35xx
   {
   public:
@@ -64,6 +56,13 @@ namespace SW35xx_lib
       bool ledOn;                ///< true if the fast-charge LED is lit (bit 7)
       uint8_t pdVersion;         ///< 2 for PD2.0, 3 for PD3.0 (bits 5–4 + 1)
       fastChargeType_t protocol; ///< which QC/PD/VOOC/etc (bits 3–0)
+    };
+
+    struct SystemStatus
+    {
+      bool buckOn;  ///< Bit 2: buck switch (1 = on, 0 = off)
+      bool portCOn; ///< Bit 0: C-port switch (1 = on, 0 = off)
+      bool portAOn; ///< Bit 1: A-port switch (1 = on, 0 = off)
     };
 
     enum PowerLimit_t
@@ -157,6 +156,12 @@ namespace SW35xx_lib
     FastChargeInfo getFastChargeInfo();
 
     /**
+     * @brief Read the PWR_STATUS register (0x07) and decode buck/C/A-port on/off.
+     * @return SystemStatus with each flag true = switch closed/on.
+     */
+    SystemStatus getSystemStatus();
+
+    /**
      * @brief Read PWR_CONF (Reg 0xA6) bits [1:0].
      */
     PowerLimit_t getPowerLimit();
@@ -214,12 +219,6 @@ namespace SW35xx_lib
     void setMaxCurrentsPPS(uint32_t ma_pps1, uint32_t ma_pps2);
 
     void resetPDLimits();
-
-    /**
-     * @brief Read the PWR_STATUS register (0x07) and parse the three control bits.
-     * @return a PowerStatus struct with buckOn, port1On, port2On flags.
-     */
-    PowerStatus getPowerStatus();
 
     /**
     //  * @brief Reset maximum output current

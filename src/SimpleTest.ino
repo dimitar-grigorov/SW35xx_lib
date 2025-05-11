@@ -47,9 +47,9 @@ void reportStatus()
   serial_printf(Serial, "Protocol        : %s\n",
                 device.fastChargeTypeToString(fc.protocol));
 
-  PowerStatus s = device.getPowerStatus();
+  SW35xx::SystemStatus s = device.getSystemStatus();
   serial_printf(Serial, "Buck: %s, Port1-C: %s, Port2-A %s\n",
-                boolToOnOff(s.buckOn), boolToOnOff(s.port1On), boolToOnOff(s.port2On));
+                boolToOnOff(s.buckOn), boolToOnOff(s.portAOn), boolToOnOff(s.portCOn));
   serial_printf(Serial, "Power Limit: %s\n", device.powerLimitToString(device.getPowerLimit()));
 
   Serial.println("=======================================");
