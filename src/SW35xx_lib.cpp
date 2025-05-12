@@ -395,6 +395,27 @@ namespace SW35xx_lib
     disableI2CWrite();
   }
 
+  // pull the format into PROGMEM
+  static const char qc_fmt[] PROGMEM =
+      "C-port:%s;A-port:%s;PD:%s;QC:%s;FCP:%s;SCP:%s;PE:%s";
+
+  // now define the static member
+  const char *SW35xx::quickChargeConfig1ToString(const QCConfig1 &cfg)
+  {
+    static char buf[40];
+    const char *on = "On";
+    const char *off = "Off";
+    snprintf_P(buf, sizeof(buf), qc_fmt,
+               cfg.cPortFastCharge ? on : off,
+               cfg.aPortFastCharge ? on : off,
+               cfg.pdProtocol ? on : off,
+               cfg.qcProtocol ? on : off,
+               cfg.fcpProtocol ? on : off,
+               cfg.scpProtocol ? on : off,
+               cfg.peProtocol ? on : off);
+    return buf;
+  }
+
   bool SW35xx::isDpdmEnabled()
   {
     int v = i2cReadReg8(SW35XX_CUR_LIMIT_CFG);

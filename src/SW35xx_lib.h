@@ -16,6 +16,35 @@ namespace SW35xx_lib
       "SCP", "PD Fix", "PD PPS", "MTK1.1",
       "MTK2.0", "LVDC", "SFCP", "AFC"};
 
+  static const char pres_names[][12] PROGMEM = {
+      "Unknown",
+      "AA: none",
+      "AA: only A1",
+      "AA: only A2",
+      "AA: A1 & A2",
+      "AC: none",
+      "AC: only C",
+      "AC: only A",
+      "AC: A & C"};
+
+  static const char pl_names[][4] PROGMEM = {
+      "18W",
+      "24W",
+      "36W",
+      "60W"};
+
+  static const char pc_names[][9] PROGMEM = {
+      "Single A",
+      "Dual A",
+      "Single C",
+      "AC (A+C)"};
+
+  static const char dpl_names[][5] PROGMEM = {
+      "2.6A",
+      "2.2A",
+      "1.7A",
+      "3.2A"};
+
   class SW35xx
   {
   public:
@@ -73,24 +102,20 @@ namespace SW35xx_lib
       Unknown = 0xFF ///< any other code
     };
 
+    /**
+     * @brief Convert PresenceStatus → human string, stored in flash.
+     * @param s the presence code (0..8)
+     * @return pointer to a RAM buffer containing the NUL-terminated string.
+     */
     static inline const char *presenceStatusToString(PresenceStatus s)
     {
-      // index 0 = "Unknown", 1..8 = the codes above
-      static const char *names[] = {
-          "Unknown",
-          "AA: none",
-          "AA: only A1",
-          "AA: only A2",
-          "AA: A1 & A2",
-          "AC: none",
-          "AC: only C",
-          "AC: only A",
-          "AC: A & C"};
+      static char buf[12];
       uint8_t idx = (uint8_t)s;
-      // idx runs 0..8, names has 9 entries
-      return (idx < (sizeof(names) / sizeof(names[0])))
-                 ? names[idx]
-                 : names[0];
+      if (idx > 8)
+        idx = 0; // clamp out-of-range back to "Unknown"
+      // copy from flash into our RAM buffer
+      strcpy_P(buf, pres_names[idx]);
+      return buf;
     }
 
     /// Which temperature to report under PPS/SCP: real NTC or fixed 45 °C?
@@ -124,12 +149,11 @@ namespace SW35xx_lib
      */
     static inline const char *powerLimitToString(PowerLimit_t lim)
     {
-      static const char *names[PL_COUNT] = {
-          "18W",
-          "24W",
-          "36W",
-          "60W"};
-      return (lim < PL_COUNT) ? names[lim] : "Unknown";
+      static char buf[4];
+      if ((uint8_t)lim >= PL_COUNT)
+        lim = PL_18W;
+      strcpy_P(buf, pl_names[(uint8_t)lim]);
+      return buf;
     }
 
     /// Which port(s) the chip drives (REG 0xAB bits 3–2)
@@ -146,12 +170,10 @@ namespace SW35xx_lib
      */
     static inline const char *portConfigToString(PortConfig_t cfg)
     {
-      static const char *names[] = {
-          "Single A",
-          "Dual A",
-          "Single C",
-          "AC (A+C)"};
-      return names[(uint8_t)cfg & 0x03];
+      static char buf[9];
+      uint8_t idx = (uint8_t)cfg & 0x03;
+      strcpy_P(buf, pc_names[idx]);
+      return buf;
     }
 
     /// Per-port current limit when both ports are active (REG 0xBD bits 5–4)
@@ -165,14 +187,11 @@ namespace SW35xx_lib
 
     static inline const char *dualPortLimitToString(DualPortLimit_t lim)
     {
-      static const char *names[] = {
-          "2.6A",
-          "2.2A",
-          "1.7A",
-          "3.2A"};
-      return names[(uint8_t)lim & 0x03];
+      static char buf[4];
+      uint8_t idx = (uint8_t)lim & 0x03;
+      strcpy_P(buf, dpl_names[idx]);
+      return buf;
     }
-
     /**
      * @brief REG 0xB9: individual QC/PD/fast-charge enable flags.
      */
@@ -193,20 +212,7 @@ namespace SW35xx_lib
      * @return pointer to a static buffer, e.g.
      *   "C-port:On;A-port:Off;PD:On;QC:Off;FCP:On;SCP:Off;PE:On"
      */
-    static inline const char *quickChargeConfig1ToString(const QCConfig1 &cfg)
-    {
-      static char buf[64];
-      snprintf(buf, sizeof(buf),
-               "C-port:%s;A-port:%s;PD:%s;QC:%s;FCP:%s;SCP:%s;PE:%s",
-               cfg.cPortFastCharge ? "On" : "Off",
-               cfg.aPortFastCharge ? "On" : "Off",
-               cfg.pdProtocol ? "On" : "Off",
-               cfg.qcProtocol ? "On" : "Off",
-               cfg.fcpProtocol ? "On" : "Off",
-               cfg.scpProtocol ? "On" : "Off",
-               cfg.peProtocol ? "On" : "Off");
-      return buf;
-    }
+    static const char *quickChargeConfig1ToString(const QCConfig1 &cfg);
 
     enum PDCmd_t
     {
