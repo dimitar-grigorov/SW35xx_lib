@@ -39,7 +39,7 @@
 #define SW35XX_QC_CONF2 0xba             // Not re-implemented
 #define SW35XX_QC_CONF3 0xbc             // Not implemented
 #define SW35XX_PD_CONF10 0xbe            // Not re-implemented
-
+#define SW35XX_CUR_LIMIT_CFG 0xbd        // Implemented
 #define SW35XX_VID_CONF1 0xbf
 
 #define I2C_RETRIES 10
@@ -363,6 +363,45 @@ namespace SW35xx_lib
   {
     enableI2CWrite();
     i2cWriteReg8(SW35XX_VID_CONF0, vidHigh);
+    disableI2CWrite();
+  }
+
+  bool SW35xx::isDpdmEnabled()
+  {
+    int v = i2cReadReg8(SW35XX_CUR_LIMIT_CFG);
+    if (v < 0)
+      return false;
+    return ((uint8_t)v & BIT(6)) != 0;
+  }
+
+  void SW35xx::enableDpdm(bool enable)
+  {
+    uint8_t cur = (uint8_t)i2cReadReg8(SW35XX_CUR_LIMIT_CFG);
+    if (enable)
+      cur |= BIT(6);
+    else
+      cur &= ~BIT(6);
+    enableI2CWrite();
+    i2cWriteReg8(SW35XX_CUR_LIMIT_CFG, cur);
+    disableI2CWrite();
+  }
+
+  SW35xx::DualPortLimit_t SW35xx::getDualPortLimit()
+  {
+    int v = i2cReadReg8(SW35XX_CUR_LIMIT_CFG);
+    if (v < 0)
+      return DPL_2_6A;
+    uint8_t sel = ((uint8_t)v >> 4) & 0x03;
+    return (DualPortLimit_t)sel;
+  }
+
+  void SW35xx::setDualPortLimit(DualPortLimit_t lim)
+  {
+    uint8_t cur = (uint8_t)i2cReadReg8(SW35XX_CUR_LIMIT_CFG);
+    // clear bits 5–4, then set
+    cur = (cur & ~(BIT(5) | BIT(4))) | ((uint8_t)lim << 4);
+    enableI2CWrite();
+    i2cWriteReg8(SW35XX_CUR_LIMIT_CFG, cur);
     disableI2CWrite();
   }
 

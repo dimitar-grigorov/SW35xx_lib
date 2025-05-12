@@ -162,6 +162,25 @@ namespace SW35xx_lib
       return names[(uint8_t)cfg & 0x03];
     }
 
+    /// Per-port current limit when both ports are active (REG 0xBD bits 5–4)
+    enum DualPortLimit_t
+    {
+      DPL_2_6A = 0, ///< 2.6 A each
+      DPL_2_2A = 1, ///< 2.2 A each
+      DPL_1_7A = 2, ///< 1.7 A each
+      DPL_3_2A = 3  ///< 3.2 A each
+    };
+
+    static inline const char *dualPortLimitToString(DualPortLimit_t lim)
+    {
+      static const char *names[] = {
+          "2.6A",
+          "2.2A",
+          "1.7A",
+          "3.2A"};
+      return names[(uint8_t)lim & 0x03];
+    }
+
     enum PDCmd_t
     {
       HARDRESET = 1
@@ -336,6 +355,30 @@ namespace SW35xx_lib
      * @param vidHigh the high-byte of the USB-PD Vendor ID to set.
      */
     void setVidHigh(uint8_t vidHigh);
+
+    /**
+     * @brief Read REG 0xBD bit 6: DPDM support when switching one→two ports.
+     * @return true if DPDM (Apple 2.7 A & Samsung 2.0 A) is enabled.
+     */
+    bool isDpdmEnabled();
+
+    /**
+     * @brief Write REG 0xBD bit 6: enable/disable DPDM support.
+     * @param enable true = allow Apple 2.7 A & Samsung 2.0 A on split ports.
+     */
+    void enableDpdm(bool enable);
+
+    /**
+     * @brief Read REG 0xBD bits 5–4: per-port current limit when both ports are active.
+     * @return one of DPL_2_6A, DPL_2_2A, DPL_1_7A or DPL_3_2A.
+     */
+    DualPortLimit_t getDualPortLimit();
+
+    /**
+     * @brief Write REG 0xBD bits 5–4: set per-port limit for dual-port operation.
+     * @param lim DPL_2_6A=2.6 A, DPL_2_2A=2.2 A, DPL_1_7A=1.7 A, DPL_3_2A=3.2 A each.
+     */
+    void setDualPortLimit(DualPortLimit_t lim);
 
     /**
      * @brief Read the current charging status

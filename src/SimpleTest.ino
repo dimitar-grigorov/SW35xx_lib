@@ -66,6 +66,10 @@ void reportStatus()
 
   serial_printf(Serial, "VID high byte  : %d\n", device.getVidHigh());
 
+  serial_printf(Serial, "DPDM support   : %s\n", boolToOnOff(device.isDpdmEnabled()));
+
+  serial_printf(Serial, "Dual-port limit: %s\n", device.dualPortLimitToString(device.getDualPortLimit()));
+
   Serial.println("=======================================");
 }
 
@@ -81,6 +85,8 @@ void printMenu()
   Serial.println(F("7: setPortConfig()"));
   Serial.println(F("8: Toggle Samsung 1.2 V mode"));
   Serial.println(F("9: Set VID high byte"));
+  Serial.println(F("10: Toggle DPDM support"));
+  Serial.println(F("11: Set dual-port current limit"));
   Serial.println(F("x: exit menu"));
   Serial.print(F("> "));
 }
@@ -95,22 +101,30 @@ void showMenu()
       delay(10);
       continue;
     }
-    char c = Serial.read();
-    if (c == '\n' || c == '\r')
-      continue;
-    switch (c)
+    String line = Serial.readStringUntil('\n');
+    line.trim(); // remove whitespace
+
+    if (line.equalsIgnoreCase("x"))
     {
-    case '1':
+      Serial.println(F("Exiting menu.\n"));
+      lastPrint = millis();
+      return;
+    }
+    int choice = line.toInt();
+
+    switch (choice)
+    {
+    case 1:
       device.setMaxCurrent5A();
       Serial.println(F("→ Set all PD currents to 5 A"));
       printMenu();
       break;
-    case '2':
+    case 2:
       device.resetPDLimits();
       Serial.println(F("→ PD limits reset to defaults"));
       printMenu();
       break;
-    case '3':
+    case 3:
     {
       // Prompt for new power limit
       serial_printf(Serial, "\nChoose non‑PD power limit:\n0: 18W\n1: 24W\n2: 36W\n3: 60W\n> ");
@@ -132,7 +146,7 @@ void showMenu()
       printMenu();
       break;
     }
-    case '4':
+    case 4:
     {
       bool on = device.isVinAdcEnabled();
       device.enableVinAdc(!on);
@@ -140,7 +154,7 @@ void showMenu()
       printMenu();
       break;
     }
-    case '5':
+    case 5:
     {
       SW35xx::ADCVinTempSource_t cur = device.getVinTempSource();
       SW35xx::ADCVinTempSource_t nxt = (cur == SW35xx::ADCVTS_NTC)
@@ -152,7 +166,7 @@ void showMenu()
       printMenu();
       break;
     }
-    case '6':
+    case 6:
     {
       bool on = device.isQc3Enabled();
       device.enableQc3(!on);
@@ -160,7 +174,7 @@ void showMenu()
       printMenu();
       break;
     }
-    case '7':
+    case 7:
     {
       Serial.println(F("\nSelect port config:"));
       Serial.println(F("0: Single A"));
@@ -181,7 +195,7 @@ void showMenu()
       printMenu();
       break;
     }
-    case '8':
+    case 8:
     {
       bool on = device.isSamsung12VModeEnabled();
       device.enableSamsung12VMode(!on);
@@ -189,7 +203,7 @@ void showMenu()
       printMenu();
       break;
     }
-    case '9':
+    case 9:
     {
       serial_printf(Serial, "\nEnter VID high byte (0–255):\n> ");
       while (!Serial.available())
@@ -201,6 +215,35 @@ void showMenu()
         val = 255;
       device.setVidHigh((uint8_t)val);
       serial_printf(Serial, "→ VID high set to %d\n", (uint8_t)val);
+      printMenu();
+      break;
+    }
+    case 10:
+    {
+      bool on = device.isDpdmEnabled();
+      device.enableDpdm(!on);
+      serial_printf(Serial, "→ DPDM support %s\n", boolToOnOff(!on));
+      printMenu();
+      break;
+    }
+    case 11:
+    {
+      Serial.println(F("\nSelect dual-port limit:"));
+      Serial.println(F("0: 2.6A each"));
+      Serial.println(F("1: 2.2A each"));
+      Serial.println(F("2: 1.7A each"));
+      Serial.println(F("3: 3.2A each"));
+      Serial.print(F("> "));
+      while (!Serial.available())
+        delay(10);
+      int choice = Serial.parseInt();
+      if (choice < 0)
+        choice = 0;
+      if (choice > 3)
+        choice = 3;
+      device.setDualPortLimit((SW35xx::DualPortLimit_t)choice);
+      serial_printf(Serial, "→ Dual-port limit set to %s\n",
+                    SW35xx::dualPortLimitToString((SW35xx::DualPortLimit_t)choice));
       printMenu();
       break;
     }
