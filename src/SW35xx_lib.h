@@ -108,6 +108,16 @@ namespace SW35xx_lib
       ADCVTS_45C = 1  ///< report a constant 45 °C
     };
 
+    /**
+     * @brief Non-PD power-limit selections (REG 0xA6 bits 1–0).
+     *
+     * Value | Power | VOUT ≤ 7 V | 7 V < VOUT ≤ 10 V | 10 V < VOUT ≤ 16 V | VOUT > 16 V
+     * ------|-------|------------|-------------------|--------------------|-----------
+     * 0     | 18 W  | 5 V @ 3.2 A | 9 V @ 2.2 A       | 12 V @ 1.7 A       | 20 V @ 1.4 A
+     * 1     | 24 W  | 5 V @ 3.2 A | 9 V @ 3.2 A       | 12 V @ 2.2 A       | 20 V @ 1.4 A
+     * 2     | 36 W  | 5 V @ 3.2 A | 9 V @ 3.2 A       | 12 V @ 3.2 A       | 20 V @ 2.2 A
+     * 3     | 60 W  | 5 V @ 3.2 A | 9 V @ 3.2 A       | 12 V @ 3.2 A       | 20 V @ 3.2 A
+     */
     enum PowerLimit_t
     {
       PL_18W = 0,
@@ -253,6 +263,7 @@ namespace SW35xx_lib
 
     /**
      * @brief Write PWR_CONF (Reg 0xA6) bits [1:0].
+     * Note: Non-PD power-limit selections!
      * @param lim one of PL_18W, PL_24W, PL_36W or PL_60W.
      */
     void setPowerLimit(PowerLimit_t lim);
