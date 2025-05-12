@@ -26,18 +26,20 @@
 #define SW35XX_PORT_CONFIG 0xab          // Implemented
 #define SW35XX_QC_CFG1 0xad              // Implemented
 #define SW35XX_VID_CONF0 0xaf            // Implemented
-#define SW35XX_PD_CONF1 0xb0
-#define SW35XX_PD_CONF2 0xb1
-#define SW35XX_PD_CONF3 0xb2
-#define SW35XX_PD_CONF4 0xb3
-#define SW35XX_PD_CONF5 0xb4
-#define SW35XX_PD_CONF6 0xb5
-#define SW35XX_PD_CONF7 0xb6
-#define SW35XX_PD_CONF8 0xb7
-#define SW35XX_PD_CONF9 0xb8
-#define SW35XX_QC_CONF1 0xb9
-#define SW35XX_QC_CONF2 0xba
-#define SW35XX_PD_CONF10 0xbe
+#define SW35XX_PD_CONF1 0xb0             // Not re-implemented
+#define SW35XX_PD_CONF2 0xb1             // Not re-implemented
+#define SW35XX_PD_CONF3 0xb2             // Not re-implemented
+#define SW35XX_PD_CONF4 0xb3             // Not re-implemented
+#define SW35XX_PD_CONF5 0xb4             // Not re-implemented
+#define SW35XX_PD_CONF6 0xb5             // Not re-implemented
+#define SW35XX_PD_CONF7 0xb6             // Not re-implemented
+#define SW35XX_PD_CONF8 0xb7             // Not re-implemented
+#define SW35XX_PD_CONF9 0xb8             // Not re-implemented
+#define SW35XX_QC_CONF1 0xb9             // Not re-implemented
+#define SW35XX_QC_CONF2 0xba             // Not re-implemented
+#define SW35XX_QC_CONF3 0xbc             // Not implemented
+#define SW35XX_PD_CONF10 0xbe            // Not re-implemented
+
 #define SW35XX_VID_CONF1 0xbf
 
 #define I2C_RETRIES 10
