@@ -314,6 +314,30 @@ namespace SW35xx_lib
     void setPortConfig(PortConfig_t cfg);
 
     /**
+     * @brief Read REG 0xAD bit 2: Samsung 1.2 V mode enable.
+     * @return true if Samsung 1.2 V mode is enabled (bit 2 = 1).
+     */
+    bool isSamsung12VModeEnabled();
+
+    /**
+     * @brief Enable or disable Samsung 1.2 V mode (REG 0xAD bit 2).
+     * @param enable true = set bit 2 to 1, false = clear bit 2.
+     */
+    void enableSamsung12VMode(bool enable);
+
+    /**
+     * @brief Read REG 0xAF: vendor ID high byte (VID[15:8]).
+     * @return the high-byte of the USB-PD Vendor ID.
+     */
+    uint8_t getVidHigh();
+
+    /**
+     * @brief Write REG 0xAF: vendor ID high byte (VID[15:8]).
+     * @param vidHigh the high-byte of the USB-PD Vendor ID to set.
+     */
+    void setVidHigh(uint8_t vidHigh);
+
+    /**
      * @brief Read the current charging status
      */
     void readStatus(const bool useADCDataBuffer = false);

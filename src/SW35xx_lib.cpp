@@ -23,8 +23,9 @@
 #define SW35XX_PD_CMD_EN 0x71            // Not implemented
 #define SW35XX_PWR_CONF 0xa6             // Implemented
 #define SW35XX_QC_CONF0 0xaa             // Implemented
-#define SW35XX_PORT_CONFIG 0xab
-#define SW35XX_VID_CONF0 0xaf
+#define SW35XX_PORT_CONFIG 0xab          // Implemented
+#define SW35XX_QC_CFG1 0xad              // Implemented
+#define SW35XX_VID_CONF0 0xaf            // Implemented
 #define SW35XX_PD_CONF1 0xb0
 #define SW35XX_PD_CONF2 0xb1
 #define SW35XX_PD_CONF3 0xb2
@@ -325,6 +326,41 @@ namespace SW35xx_lib
     cur = (cur & ~BIT(2) & ~BIT(3)) | ((uint8_t)cfg << 2);
     enableI2CWrite();
     i2cWriteReg8(SW35XX_PORT_CONFIG, cur);
+    disableI2CWrite();
+  }
+
+  // — REG 0xAD: Samsung 1.2 V mode —
+  bool SW35xx::isSamsung12VModeEnabled()
+  {
+    int v = i2cReadReg8(SW35XX_QC_CFG1);
+    if (v < 0)
+      return false;
+    return ((uint8_t)v & BIT(2)) != 0;
+  }
+
+  void SW35xx::enableSamsung12VMode(bool enable)
+  {
+    uint8_t cur = (uint8_t)i2cReadReg8(SW35XX_QC_CFG1);
+    if (enable)
+      cur |= BIT(2);
+    else
+      cur &= ~BIT(2);
+    enableI2CWrite();
+    i2cWriteReg8(SW35XX_QC_CFG1, cur);
+    disableI2CWrite();
+  }
+
+  // — REG 0xAF: Vendor-ID high byte —
+  uint8_t SW35xx::getVidHigh()
+  {
+    int v = i2cReadReg8(SW35XX_VID_CONF0);
+    return (v < 0) ? 0 : (uint8_t)v;
+  }
+
+  void SW35xx::setVidHigh(uint8_t vidHigh)
+  {
+    enableI2CWrite();
+    i2cWriteReg8(SW35XX_VID_CONF0, vidHigh);
     disableI2CWrite();
   }
 

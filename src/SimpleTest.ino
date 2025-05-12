@@ -62,6 +62,10 @@ void reportStatus()
 
   serial_printf(Serial, "Port config     : %s\n", SW35xx::portConfigToString(device.getPortConfig()));
 
+  serial_printf(Serial, "Samsung 1.2 V  : %s\n", boolToOnOff(device.isSamsung12VModeEnabled()));
+
+  serial_printf(Serial, "VID high byte  : %d\n", device.getVidHigh());
+
   Serial.println("=======================================");
 }
 
@@ -75,6 +79,8 @@ void printMenu()
   Serial.println(F("5: Toggle Vin temp source (NTC/45C)"));
   Serial.println(F("6: Toggle QC3.0 enable"));
   Serial.println(F("7: setPortConfig()"));
+  Serial.println(F("8: Toggle Samsung 1.2 V mode"));
+  Serial.println(F("9: Set VID high byte"));
   Serial.println(F("x: exit menu"));
   Serial.print(F("> "));
 }
@@ -172,6 +178,29 @@ void showMenu()
       device.setPortConfig((SW35xx::PortConfig_t)choice);
       serial_printf(Serial, "→ Port config set to %s\n",
                     SW35xx::portConfigToString((SW35xx::PortConfig_t)choice));
+      printMenu();
+      break;
+    }
+    case '8':
+    {
+      bool on = device.isSamsung12VModeEnabled();
+      device.enableSamsung12VMode(!on);
+      serial_printf(Serial, "→ Samsung 1.2 V mode %s\n", boolToOnOff(!on));
+      printMenu();
+      break;
+    }
+    case '9':
+    {
+      serial_printf(Serial, "\nEnter VID high byte (0–255):\n> ");
+      while (!Serial.available())
+        delay(10);
+      int val = Serial.parseInt();
+      if (val < 0)
+        val = 0;
+      if (val > 255)
+        val = 255;
+      device.setVidHigh((uint8_t)val);
+      serial_printf(Serial, "→ VID high set to %d\n", (uint8_t)val);
       printMenu();
       break;
     }
