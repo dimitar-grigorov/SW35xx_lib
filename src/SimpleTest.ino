@@ -60,6 +60,8 @@ void reportStatus()
 
   serial_printf(Serial, "QC3.0 enabled   : %s\n", boolToOnOff(device.isQc3Enabled()));
 
+  serial_printf(Serial, "Port config     : %s\n", SW35xx::portConfigToString(device.getPortConfig()));
+
   Serial.println("=======================================");
 }
 
@@ -72,6 +74,7 @@ void printMenu()
   Serial.println(F("4: Toggle Vin ADC enable"));
   Serial.println(F("5: Toggle Vin temp source (NTC/45C)"));
   Serial.println(F("6: Toggle QC3.0 enable"));
+  Serial.println(F("7: setPortConfig()"));
   Serial.println(F("x: exit menu"));
   Serial.print(F("> "));
 }
@@ -148,6 +151,27 @@ void showMenu()
       bool on = device.isQc3Enabled();
       device.enableQc3(!on);
       serial_printf(Serial, "→ QC3.0 %s\n", boolToOnOff(!on));
+      printMenu();
+      break;
+    }
+    case '7':
+    {
+      Serial.println(F("\nSelect port config:"));
+      Serial.println(F("0: Single A"));
+      Serial.println(F("1: Dual A"));
+      Serial.println(F("2: Single C"));
+      Serial.println(F("3: AC (A+C)"));
+      Serial.print(F("> "));
+      while (!Serial.available())
+        delay(10);
+      int choice = Serial.parseInt();
+      if (choice < 0)
+        choice = 0;
+      if (choice > 3)
+        choice = 3;
+      device.setPortConfig((SW35xx::PortConfig_t)choice);
+      serial_printf(Serial, "→ Port config set to %s\n",
+                    SW35xx::portConfigToString((SW35xx::PortConfig_t)choice));
       printMenu();
       break;
     }

@@ -140,6 +140,28 @@ namespace SW35xx_lib
       return (lim < PL_COUNT) ? names[lim] : "Unknown";
     }
 
+    /// Which port(s) the chip drives (REG 0xAB bits 3–2)
+    enum PortConfig_t
+    {
+      PORT_SINGLE_A = 0, ///< single Type-A port
+      PORT_DUAL_A = 1,   ///< two Type-A ports
+      PORT_SINGLE_C = 2, ///< single Type-C port
+      PORT_AC = 3        ///< one A and one C port (AC mode)
+    };
+
+    /**
+     * @brief Convert a PortConfig_t to a human string.
+     */
+    static inline const char *portConfigToString(PortConfig_t cfg)
+    {
+      static const char *names[] = {
+          "Single A",
+          "Dual A",
+          "Single C",
+          "AC (A+C)"};
+      return names[(uint8_t)cfg & 0x03];
+    }
+
     enum PDCmd_t
     {
       HARDRESET = 1
@@ -279,6 +301,17 @@ namespace SW35xx_lib
      * @param enable true = set bit 6 to 1 (enable QC3.0), false = clear bit 6.
      */
     void enableQc3(bool enable);
+
+    /**
+     * @brief Read REG 0xAB bits 3–2 and return the current port config.
+     */
+    PortConfig_t getPortConfig();
+
+    /**
+     * @brief Write REG 0xAB bits 3–2 to select the port configuration.
+     * @param cfg the desired PortConfig_t
+     */
+    void setPortConfig(PortConfig_t cfg);
 
     /**
      * @brief Read the current charging status

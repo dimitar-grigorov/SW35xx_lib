@@ -309,6 +309,25 @@ namespace SW35xx_lib
     disableI2CWrite(); // re-lock
   }
 
+  SW35xx::PortConfig_t SW35xx::getPortConfig()
+  {
+    int v = i2cReadReg8(SW35XX_PORT_CONFIG);
+    if (v < 0)
+      return PORT_SINGLE_A;
+    uint8_t raw = ((uint8_t)v >> 2) & 0x03;
+    return (PortConfig_t)raw;
+  }
+
+  void SW35xx::setPortConfig(PortConfig_t cfg)
+  {
+    // read-modify-write, preserving reserved bits
+    uint8_t cur = (uint8_t)i2cReadReg8(SW35XX_PORT_CONFIG);
+    cur = (cur & ~BIT(2) & ~BIT(3)) | ((uint8_t)cfg << 2);
+    enableI2CWrite();
+    i2cWriteReg8(SW35XX_PORT_CONFIG, cur);
+    disableI2CWrite();
+  }
+
   void SW35xx::readStatus(const bool useADCDataBuffer)
   {
     uint16_t vin = 0;
