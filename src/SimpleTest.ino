@@ -58,6 +58,8 @@ void reportStatus()
 
   serial_printf(Serial, "Power Limit     : %s\n", device.powerLimitToString(device.getPowerLimit()));
 
+  serial_printf(Serial, "QC3.0 enabled   : %s\n", boolToOnOff(device.isQc3Enabled()));
+
   Serial.println("=======================================");
 }
 
@@ -69,6 +71,7 @@ void printMenu()
   Serial.println(F("3: setPowerLimit()"));
   Serial.println(F("4: Toggle Vin ADC enable"));
   Serial.println(F("5: Toggle Vin temp source (NTC/45C)"));
+  Serial.println(F("6: Toggle QC3.0 enable"));
   Serial.println(F("x: exit menu"));
   Serial.print(F("> "));
 }
@@ -137,6 +140,14 @@ void showMenu()
       device.setVinTempSource(nxt);
       serial_printf(Serial, "→ Vin temp source: %s\n",
                     nxt == SW35xx::ADCVTS_NTC ? "NTC" : "45°C");
+      printMenu();
+      break;
+    }
+    case '6':
+    {
+      bool on = device.isQc3Enabled();
+      device.enableQc3(!on);
+      serial_printf(Serial, "→ QC3.0 %s\n", boolToOnOff(!on));
       printMenu();
       break;
     }

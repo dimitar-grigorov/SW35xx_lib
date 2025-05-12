@@ -21,8 +21,9 @@
 #define SW35XX_ADC_DATA_BUF_L 0x3c       // Not re-implemented
 #define SW35XX_PD_SRC_REQ 0x70           // Not re-implemented
 #define SW35XX_PD_CMD_EN 0x71            // Not implemented
-#define SW35XX_PWR_CONF 0xa6
-#define SW35XX_QC_CONF0 0xaa
+#define SW35XX_PWR_CONF 0xa6             // Implemented
+#define SW35XX_QC_CONF0 0xaa             // Implemented
+#define SW35XX_PORT_CONFIG 0xab
 #define SW35XX_VID_CONF0 0xaf
 #define SW35XX_PD_CONF1 0xb0
 #define SW35XX_PD_CONF2 0xb1
@@ -285,6 +286,27 @@ namespace SW35xx_lib
     enableI2CWrite();
     i2cWriteReg8(SW35XX_PWR_CONF, nw);
     disableI2CWrite();
+  }
+
+  bool SW35xx::isQc3Enabled()
+  {
+    int v = i2cReadReg8(SW35XX_QC_CONF0);
+    if (v < 0)
+      return false;
+    return ((uint8_t)v & BIT(6)) != 0;
+  }
+
+  void SW35xx::enableQc3(bool enable)
+  {
+    // read-modify-write
+    uint8_t cur = (uint8_t)i2cReadReg8(SW35XX_QC_CONF0);
+    if (enable)
+      cur |= BIT(6);
+    else
+      cur &= ~BIT(6);
+    enableI2CWrite(); // unlock extended writes
+    i2cWriteReg8(SW35XX_QC_CONF0, cur);
+    disableI2CWrite(); // re-lock
   }
 
   void SW35xx::readStatus(const bool useADCDataBuffer)

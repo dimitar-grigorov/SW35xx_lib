@@ -269,6 +269,18 @@ namespace SW35xx_lib
     void setPowerLimit(PowerLimit_t lim);
 
     /**
+     * @brief Read REG 0xAA bit 6: QC3.0 enable.
+     * @return true if QC3.0 is enabled (bit 6 = 1).
+     */
+    bool isQc3Enabled();
+
+    /**
+     * @brief Enable or disable QC3.0 support.
+     * @param enable true = set bit 6 to 1 (enable QC3.0), false = clear bit 6.
+     */
+    void enableQc3(bool enable);
+
+    /**
      * @brief Read the current charging status
      */
     void readStatus(const bool useADCDataBuffer = false);
