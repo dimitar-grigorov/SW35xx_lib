@@ -57,18 +57,15 @@ void reportStatus()
                 device.getVinTempSource() == SW35xx::ADCVTS_NTC ? "NTC" : "45°C");
 
   serial_printf(Serial, "Power Limit     : %s\n", device.powerLimitToString(device.getPowerLimit()));
-
   serial_printf(Serial, "QC3.0 enabled   : %s\n", boolToOnOff(device.isQc3Enabled()));
-
   serial_printf(Serial, "Port config     : %s\n", SW35xx::portConfigToString(device.getPortConfig()));
-
   serial_printf(Serial, "Samsung 1.2 V  : %s\n", boolToOnOff(device.isSamsung12VModeEnabled()));
-
   serial_printf(Serial, "VID high byte  : %d\n", device.getVidHigh());
-
   serial_printf(Serial, "DPDM support   : %s\n", boolToOnOff(device.isDpdmEnabled()));
-
   serial_printf(Serial, "Dual-port limit: %s\n", device.dualPortLimitToString(device.getDualPortLimit()));
+  SW35xx::QCConfig1 qc1 = device.getQuickChargeConfig1();
+  serial_printf(Serial, "QC-cfg1 flags   : %s\n", SW35xx::quickChargeConfig1ToString(qc1));
+  serial_printf(Serial, "VID low byte    : 0x%02X\n", device.getVidLow());
 
   Serial.println("=======================================");
 }
@@ -87,6 +84,8 @@ void printMenu()
   Serial.println(F("9: Set VID high byte"));
   Serial.println(F("10: Toggle DPDM support"));
   Serial.println(F("11: Set dual-port current limit"));
+  // Serial.println(F("12: setQuickChargeConfig1()"));
+  Serial.println(F("13: setVidLow()"));
   Serial.println(F("x: exit menu"));
   Serial.print(F("> "));
 }
@@ -101,16 +100,21 @@ void showMenu()
       delay(10);
       continue;
     }
-    String line = Serial.readStringUntil('\n');
-    line.trim(); // remove whitespace
+    // read up to 3 chars + NUL
+    char linebuf[4];
+    auto len = Serial.readBytesUntil('\n', linebuf, sizeof(linebuf) - 1);
+    linebuf[len] = '\0';
 
-    if (line.equalsIgnoreCase("x"))
+    // check for exit
+    if (len > 0 && (linebuf[0] == 'x' || linebuf[0] == 'X'))
     {
       Serial.println(F("Exiting menu.\n"));
       lastPrint = millis();
       return;
     }
-    int choice = line.toInt();
+
+    // parse choice from the small buffer
+    int choice = atoi(linebuf);
 
     switch (choice)
     {
@@ -247,13 +251,18 @@ void showMenu()
       printMenu();
       break;
     }
-    case 'x':
-    case 'X':
-      Serial.println(F("Exiting menu.\n"));
-      while (Serial.available())
-        Serial.read();
-      lastPrint = millis();
-      return;
+    case 13:
+    {
+      serial_printf(Serial, "\nEnter VID low byte (hex 00–FF):\n> ");
+      while (!Serial.available())
+        delay(10);
+      String s = Serial.readStringUntil('\n');
+      uint8_t v = (uint8_t)strtoul(s.c_str(), nullptr, 16);
+      device.setVidLow(v);
+      serial_printf(Serial, "→ VID low set to 0x%02X\n", v);
+      printMenu();
+      break;
+    }
     default:
       Serial.println(F("Invalid choice"));
       printMenu();

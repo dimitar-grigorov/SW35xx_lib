@@ -35,7 +35,7 @@
 #define SW35XX_PD_CONF7 0xb6             // Not re-implemented
 #define SW35XX_PD_CONF8 0xb7             // Not re-implemented
 #define SW35XX_PD_CONF9 0xb8             // Not re-implemented
-#define SW35XX_QC_CONF1 0xb9             // Not re-implemented
+#define SW35XX_QC_CONF1 0xb9             // Implemented - needs human friendly demo
 #define SW35XX_QC_CONF2 0xba             // Not re-implemented
 #define SW35XX_QC_CONF3 0xbc             // Not implemented
 #define SW35XX_PD_CONF10 0xbe            // Not re-implemented
@@ -366,6 +366,35 @@ namespace SW35xx_lib
     disableI2CWrite();
   }
 
+  SW35xx::QCConfig1 SW35xx::getQuickChargeConfig1()
+  {
+    uint8_t b = (uint8_t)i2cReadReg8(SW35XX_QC_CONF1);
+    return QCConfig1{
+        /*cPortFastCharge=*/(b & BIT(7)) != 0,
+        /*aPortFastCharge=*/(b & BIT(6)) != 0,
+        /*pdProtocol     =*/(b & BIT(5)) != 0,
+        /*qcProtocol     =*/(b & BIT(4)) != 0,
+        /*fcpProtocol    =*/(b & BIT(3)) != 0,
+        /*scpProtocol    =*/(b & BIT(2)) != 0,
+        /*peProtocol     =*/(b & BIT(0)) != 0};
+  }
+
+  void SW35xx::setQuickChargeConfig1(const QCConfig1 &cfg)
+  {
+    uint8_t b = 0;
+    b |= (uint8_t)cfg.cPortFastCharge << 7;
+    b |= (uint8_t)cfg.aPortFastCharge << 6;
+    b |= (uint8_t)cfg.pdProtocol << 5;
+    b |= (uint8_t)cfg.qcProtocol << 4;
+    b |= (uint8_t)cfg.fcpProtocol << 3;
+    b |= (uint8_t)cfg.scpProtocol << 2;
+    b |= (uint8_t)cfg.peProtocol << 0;
+
+    enableI2CWrite();
+    i2cWriteReg8(SW35XX_QC_CONF1, b);
+    disableI2CWrite();
+  }
+
   bool SW35xx::isDpdmEnabled()
   {
     int v = i2cReadReg8(SW35XX_CUR_LIMIT_CFG);
@@ -402,6 +431,19 @@ namespace SW35xx_lib
     cur = (cur & ~(BIT(5) | BIT(4))) | ((uint8_t)lim << 4);
     enableI2CWrite();
     i2cWriteReg8(SW35XX_CUR_LIMIT_CFG, cur);
+    disableI2CWrite();
+  }
+
+  uint8_t SW35xx::getVidLow()
+  {
+    int v = i2cReadReg8(SW35XX_VID_CONF1);
+    return (v < 0) ? 0 : (uint8_t)v;
+  }
+
+  void SW35xx::setVidLow(uint8_t vidLow)
+  {
+    enableI2CWrite();
+    i2cWriteReg8(SW35XX_VID_CONF1, vidLow);
     disableI2CWrite();
   }
 

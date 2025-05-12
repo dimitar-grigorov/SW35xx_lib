@@ -10,6 +10,12 @@
 
 namespace SW35xx_lib
 {
+
+  static const char fc_names[][12] PROGMEM = {
+      "Not fast", "QC2.0", "QC3.0", "FCP",
+      "SCP", "PD Fix", "PD PPS", "MTK1.1",
+      "MTK2.0", "LVDC", "SFCP", "AFC"};
+
   class SW35xx
   {
   public:
@@ -30,25 +36,11 @@ namespace SW35xx_lib
       FAST_CHARGE_TYPE_COUNT
     };
 
-    inline const char *fastChargeTypeToString(fastChargeType_t aType)
+    const char *fastChargeTypeToString(fastChargeType_t t)
     {
-      // a compile-time array of names
-      static const char *names[FAST_CHARGE_TYPE_COUNT] = {
-          "Not fast charge",
-          "QC2.0",
-          "QC3.0",
-          "FCP",
-          "SCP",
-          "PD Fix",
-          "PD PPS",
-          "MTK PE1.1",
-          "MTK PE2.0",
-          "LVDC",
-          "SFCP",
-          "AFC"};
-      return (aType < FAST_CHARGE_TYPE_COUNT)
-                 ? names[aType]
-                 : "Unknown";
+      static char buf[12];
+      strcpy_P(buf, (PGM_P)fc_names[t]);
+      return buf;
     }
 
     struct FastChargeInfo
@@ -179,6 +171,41 @@ namespace SW35xx_lib
           "1.7A",
           "3.2A"};
       return names[(uint8_t)lim & 0x03];
+    }
+
+    /**
+     * @brief REG 0xB9: individual QC/PD/fast-charge enable flags.
+     */
+    struct QCConfig1
+    {
+      bool cPortFastCharge; ///< bit7: C-port fast charge
+      bool aPortFastCharge; ///< bit6: A-port fast charge
+      bool pdProtocol;      ///< bit5: PD protocol support
+      bool qcProtocol;      ///< bit4: QC protocol support
+      bool fcpProtocol;     ///< bit3: FCP support
+      bool scpProtocol;     ///< bit2: SCP support
+      bool peProtocol;      ///< bit0: PE support
+    };
+
+    /**
+     * @brief Convert REG 0xB9 QCConfig1 flags into a human string.
+     * @param cfg the decoded QCConfig1 struct
+     * @return pointer to a static buffer, e.g.
+     *   "C-port:On;A-port:Off;PD:On;QC:Off;FCP:On;SCP:Off;PE:On"
+     */
+    static inline const char *quickChargeConfig1ToString(const QCConfig1 &cfg)
+    {
+      static char buf[64];
+      snprintf(buf, sizeof(buf),
+               "C-port:%s;A-port:%s;PD:%s;QC:%s;FCP:%s;SCP:%s;PE:%s",
+               cfg.cPortFastCharge ? "On" : "Off",
+               cfg.aPortFastCharge ? "On" : "Off",
+               cfg.pdProtocol ? "On" : "Off",
+               cfg.qcProtocol ? "On" : "Off",
+               cfg.fcpProtocol ? "On" : "Off",
+               cfg.scpProtocol ? "On" : "Off",
+               cfg.peProtocol ? "On" : "Off");
+      return buf;
     }
 
     enum PDCmd_t
@@ -357,6 +384,16 @@ namespace SW35xx_lib
     void setVidHigh(uint8_t vidHigh);
 
     /**
+     * @brief Read REG 0xB9: individual QC/PD/fast-charge enable flags.
+     */
+    QCConfig1 getQuickChargeConfig1();
+
+    /**
+     * @brief Write REG 0xB9: set individual QC/PD/fast-charge enable flags.
+     */
+    void setQuickChargeConfig1(const QCConfig1 &cfg);
+
+    /**
      * @brief Read REG 0xBD bit 6: DPDM support when switching one→two ports.
      * @return true if DPDM (Apple 2.7 A & Samsung 2.0 A) is enabled.
      */
@@ -379,6 +416,18 @@ namespace SW35xx_lib
      * @param lim DPL_2_6A=2.6 A, DPL_2_2A=2.2 A, DPL_1_7A=1.7 A, DPL_3_2A=3.2 A each.
      */
     void setDualPortLimit(DualPortLimit_t lim);
+
+    /**
+     * @brief Read REG 0xBF: vendor-ID low byte (VID[7:0]).
+     * @return low-byte of the PD Vendor ID.
+     */
+    uint8_t getVidLow();
+
+    /**
+     * @brief Write REG 0xBF: vendor-ID low byte (VID[7:0]).
+     * @param vidLow low-byte of the PD Vendor ID to set.
+     */
+    void setVidLow(uint8_t vidLow);
 
     /**
      * @brief Read the current charging status
